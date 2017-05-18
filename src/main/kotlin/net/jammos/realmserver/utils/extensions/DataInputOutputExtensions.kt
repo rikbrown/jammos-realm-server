@@ -1,5 +1,6 @@
 package net.jammos.realmserver.utils.extensions
 
+import com.google.common.net.InetAddresses
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
 import java.io.DataInput
 import java.net.InetAddress
@@ -17,8 +18,10 @@ fun DataInput.readUnsignedInt(): Int {
 }
 
 fun DataInput.readIpAddress(): InetAddress {
-    val bytes = readBytes(4)
-    return InetAddress.getByAddress(bytes)
+    /** [InetAddresses.fromInteger] because [InetAddresses.fromLittleEndianByteArray] forces little endian].
+     * and we use this because [InetAddress] can potentially make network calls on construction...
+     */
+    return InetAddresses.fromInteger(readInt())
 }
 
 fun DataInput.readBytes(cnt: Int): ByteArray {

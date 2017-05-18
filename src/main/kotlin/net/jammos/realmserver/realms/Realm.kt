@@ -8,7 +8,9 @@ data class Realm(
         val name: String,
         val address: InternetAddress,
         val realmFlags: Set<RealmFlag> = setOf(),
-        val realmType: RealmType = RealmType.NORMAL)
+        val realmType: RealmType = RealmType.NORMAL,
+        val playerCount: Int = 1,
+        val maxPlayerCount: Int = 1000)
 
 data class RealmId(val realmId: String) {
     companion object {

@@ -1,12 +1,13 @@
 package net.jammos.realmserver.data
 
+import net.jammos.realmserver.network.message.client.ClientAuthMessage
 import net.jammos.realmserver.utils.extensions.readChars
 import net.jammos.realmserver.utils.extensions.readIpAddress
 import net.jammos.realmserver.utils.extensions.readUnsignedInt
 import java.io.DataInput
 import java.net.InetAddress
 
-data class AuthLogonChallenge(
+data class ClientAuthLogonChallengeMessage(
         val gameName: String,
         val version1: Int,
         val version2: Int,
@@ -19,12 +20,14 @@ data class AuthLogonChallenge(
         val ip: InetAddress,
         val srpIdentity: String
 
-) {
+): ClientAuthMessage {
 
-    companion object {
+    companion object : ClientAuthMessage.Reader {
+        override fun readBody(input: DataInput): ClientAuthLogonChallengeMessage {
+            val error = input.readByte()
+            val packetSize = input.readUnsignedShort()
 
-        fun read(input: DataInput): AuthLogonChallenge {
-            return AuthLogonChallenge(
+            return ClientAuthLogonChallengeMessage(
                     gameName = input.readChars(4, reverse = false),
                     version1 = input.readUnsignedByte(),
                     version2 = input.readUnsignedByte(),

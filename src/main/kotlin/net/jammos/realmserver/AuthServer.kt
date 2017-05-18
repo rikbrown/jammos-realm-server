@@ -1,21 +1,35 @@
 package net.jammos.realmserver
 
+import io.netty.bootstrap.ServerBootstrap
+import io.netty.channel.ChannelInitializer
+import io.netty.channel.ChannelOption
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.SocketChannel
+import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.handler.logging.LogLevel
+import io.netty.handler.logging.LoggingHandler
+import io.netty.handler.timeout.ReadTimeoutHandler
 import net.jammos.realmserver.auth.InMemoryAuthDao
 import net.jammos.realmserver.auth.Username.Username.username
 import net.jammos.realmserver.auth.crypto.CryptoConstants
 import net.jammos.realmserver.auth.crypto.CryptoManager
+import net.jammos.realmserver.network.AuthServerHandler
+import net.jammos.realmserver.network.SessionHandler
+import net.jammos.realmserver.network.message.coding.ClientAuthMessageDecoder
+import net.jammos.realmserver.network.message.coding.ServerAuthMessageEncoder
 import net.jammos.realmserver.realms.InMemoryRealmDao
-import java.net.ServerSocket
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import net.jammos.realmserver.session.InMemorySessionManager
+import java.net.InetAddress
 
 class AuthServer {
     companion object {
-        val executorService: ExecutorService = Executors.newCachedThreadPool()
-        val serverSocket = ServerSocket(3724)
-        val cryptoManager = CryptoManager(constants = CryptoConstants())
-        val authDao = InMemoryAuthDao(cryptoManager)
-        val realmDao = InMemoryRealmDao()
+        private val TIMEOUT = 10
+        private val PORT = 3724
+
+        private val cryptoManager = CryptoManager(constants = CryptoConstants())
+        private val authDao = InMemoryAuthDao(cryptoManager)
+        private val realmDao = InMemoryRealmDao()
+        private val sessionManager = InMemorySessionManager()
 
         init {
             authDao.createUser(username("rikbrown"), "test1234")
@@ -23,24 +37,54 @@ class AuthServer {
         }
 
         @JvmStatic fun main(args: Array<String>) {
-            while (true) {
-                val socket = serverSocket.accept();
-                executorService.submit {
-                    try {
-                        AuthClientSocket(socket,
-                                authDao = authDao,
-                                realmDao = realmDao,
-                                cryptoManager = cryptoManager).run()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        socket.close()
-                    }
-                }
+
+            // Configure the server.
+            val bossGroup = NioEventLoopGroup(1)
+            val workerGroup = NioEventLoopGroup()
+            try {
+                val b = ServerBootstrap()
+
+                b.group(bossGroup, workerGroup)
+                        .channel(NioServerSocketChannel::class.java)
+                        .option(ChannelOption.SO_BACKLOG, 100)
+                        .option(ChannelOption.TCP_NODELAY, true)
+                        .option(ChannelOption.SO_KEEPALIVE, true)
+                        .option(ChannelOption.SO_REUSEADDR, true)
+                        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 100)
+                        .handler(LoggingHandler(LogLevel.INFO))
+                        .childHandler(object : ChannelInitializer<SocketChannel>() {
+                            @Throws(Exception::class)
+                            public override fun initChannel(ch: SocketChannel) {
+                                val p = ch.pipeline()
+                                p.addLast(
+                                        ClientAuthMessageDecoder(),
+                                        ServerAuthMessageEncoder(),
+                                        ReadTimeoutHandler(TIMEOUT),
+                                        SessionHandler(sessionManager),
+                                        AuthServerHandler(
+                                            authDao = authDao,
+                                            cryptoManager = cryptoManager,
+                                            realmDao = realmDao,
+                                            sessionManager =  sessionManager))
+                            }
+                        })
+
+                // Start the server.
+                val hostAddress = InetAddress.getLoopbackAddress()
+                val f = b.bind(hostAddress, PORT).sync()
+
+
+
+                // Wait until the server socket is closed.
+                f.channel().closeFuture().sync()
+            } finally {
+                // Shut down all event loops to terminate all threads.
+                bossGroup.shutdownGracefully()
+                workerGroup.shutdownGracefully()
             }
+
         }
+
     }
-
-
-
 }
 
