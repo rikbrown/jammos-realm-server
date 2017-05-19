@@ -1,6 +1,5 @@
-package net.jammos.realmserver.data
+package net.jammos.realmserver.network.message.client
 
-import net.jammos.realmserver.network.message.client.ClientAuthMessage
 import net.jammos.realmserver.utils.checkArgument
 import net.jammos.realmserver.utils.extensions.readChars
 import net.jammos.realmserver.utils.extensions.readIpAddress

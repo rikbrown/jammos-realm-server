@@ -18,6 +18,5 @@ abstract class Step<T : ClientAuthMessage, out R: ServerAuthMessage>(val message
     data class ResponseAndNextStep<out R: Any>(
             val response: R,
             val nextStep: Step<*, *>? = null)
-
 }
 

@@ -1,7 +1,6 @@
 package net.jammos.realmserver.network.message.client
 
 import mu.KLogging
-import net.jammos.realmserver.data.ClientAuthLogonChallengeMessage
 import net.jammos.realmserver.network.AuthCommand
 import java.io.DataInput
 
