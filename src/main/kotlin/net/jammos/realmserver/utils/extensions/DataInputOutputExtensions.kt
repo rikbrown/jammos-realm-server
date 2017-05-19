@@ -34,3 +34,7 @@ fun DataInput.readBigUnsigned(size: Int): BigUnsignedInteger {
     val bytes = readBytes(size)
     return BigUnsignedInteger(bytes)
 }
+
+/*fun DataOutput.writeChars(string: String, reverse: Boolean = false) {
+
+}*/

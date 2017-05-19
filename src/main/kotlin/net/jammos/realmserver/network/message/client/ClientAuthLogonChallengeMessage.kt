@@ -1,9 +1,9 @@
 package net.jammos.realmserver.network.message.client
 
-import net.jammos.realmserver.utils.checkArgument
 import net.jammos.realmserver.utils.extensions.readChars
 import net.jammos.realmserver.utils.extensions.readIpAddress
 import net.jammos.realmserver.utils.extensions.readUnsignedInt
+import net.jammos.realmserver.utils.field
 import java.io.DataInput
 import java.net.InetAddress
 
@@ -23,28 +23,30 @@ data class ClientAuthLogonChallengeMessage(
 ): ClientAuthMessage {
 
     companion object : ClientAuthMessage.Reader {
-        private val SRP_IDENTITY_SIZE_PREDICATE = { size: Int -> size < 20 }
-
-        @Suppress("UNUSED_VARIABLE") // keeping error/packetSize for reference
         override fun readBody(input: DataInput): ClientAuthLogonChallengeMessage {
-            val error = input.readByte()
-            val packetSize = input.readUnsignedShort()
+            field("error") { input.readByte() }
+            field("packetSize") { input.readUnsignedShort() }
 
-            return ClientAuthLogonChallengeMessage(
-                    gameName = input.readChars(4, reverse = false),
-                    version1 = input.readUnsignedByte(),
-                    version2 = input.readUnsignedByte(),
-                    version3 = input.readUnsignedByte(),
-                    build = input.readUnsignedShort(),
-                    platform = input.readChars(4),
-                    os = input.readChars(4),
-                    country = input.readChars(4),
-                    timezoneBias = input.readUnsignedInt(),
-                    ip = input.readIpAddress(),
-                    // FIXME: validate the length isn't ridiculous
-                    srpIdentity = input.readChars(
-                            checkArgument(input.readUnsignedByte(), SRP_IDENTITY_SIZE_PREDICATE) { "srp identity too long ($it bytes)" },
-                            reverse = false))
+            return with(input) {
+                // @formatter:off
+                ClientAuthLogonChallengeMessage(
+                        gameName     = field("gameName")     { readChars(4, reverse = false) },
+                        version1     = field("version1")     { readUnsignedByte() },
+                        version2     = field("version2")     { readUnsignedByte() },
+                        version3     = field("version3")     { readUnsignedByte() },
+                        build        = field("build")        { readUnsignedShort() },
+                        platform     = field("platform")     { readChars(4) },
+                        os           = field("os")           { readChars(4) },
+                        country      = field("country")      { readChars(4) },
+                        timezoneBias = field("timezoneBias") { readUnsignedInt() },
+                        ip           = field("ip")           { readIpAddress() },
+
+                        srpIdentity  = field("srpIdentity")  {
+                            readChars(field("srpIdentityLength") { readUnsignedByte() },
+                            reverse = false) }
+                )
+                // @formatter:on
+            }
         }
 
     }
