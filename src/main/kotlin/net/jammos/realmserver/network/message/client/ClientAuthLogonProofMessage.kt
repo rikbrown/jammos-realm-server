@@ -18,7 +18,7 @@ data class ClientAuthLogonProofMessage(
             return with(input) {
                 // @formatter:off
                 ClientAuthLogonProofMessage(
-                        A             = field("A")             { input.readBigUnsigned(32) },
+                        A             = field("A")             { readBigUnsigned(32) },
                         M1            = field("M1")            { readBigUnsigned(20) },
                         crc_hash      = field("crc_hash")      { readBytes(20) },
                         numberOfKeys  = field("numberOfKeys")  { readUnsignedByte() },
