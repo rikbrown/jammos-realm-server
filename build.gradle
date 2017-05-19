@@ -2,7 +2,7 @@ group 'com.jammos'
 version '0.1-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1.2'
+    ext.kotlin_version = '1.1.2-3'
 
     repositories {
         mavenCentral()
@@ -29,4 +29,8 @@ dependencies {
     compile group: 'io.github.microutils', name: 'kotlin-logging', version: '1.4.4'
     compile group: 'io.netty', name: 'netty-all', version: '4.1.9.Final'
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+
+    // Test
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+    testCompile group: 'com.nhaarman', name: 'mockito-kotlin', version: '1.4.0'
 }
