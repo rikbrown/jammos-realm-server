@@ -1,6 +1,7 @@
 package net.jammos.realmserver.data
 
 import net.jammos.realmserver.network.message.client.ClientAuthMessage
+import net.jammos.realmserver.utils.checkArgument
 import net.jammos.realmserver.utils.extensions.readChars
 import net.jammos.realmserver.utils.extensions.readIpAddress
 import net.jammos.realmserver.utils.extensions.readUnsignedInt
@@ -23,6 +24,9 @@ data class ClientAuthLogonChallengeMessage(
 ): ClientAuthMessage {
 
     companion object : ClientAuthMessage.Reader {
+        private val SRP_IDENTITY_SIZE_PREDICATE = { size: Int -> size < 20 }
+
+        @Suppress("UNUSED_VARIABLE") // keeping error/packetSize for reference
         override fun readBody(input: DataInput): ClientAuthLogonChallengeMessage {
             val error = input.readByte()
             val packetSize = input.readUnsignedShort()
@@ -39,7 +43,9 @@ data class ClientAuthLogonChallengeMessage(
                     timezoneBias = input.readUnsignedInt(),
                     ip = input.readIpAddress(),
                     // FIXME: validate the length isn't ridiculous
-                    srpIdentity = input.readChars(input.readUnsignedByte(), reverse = false))
+                    srpIdentity = input.readChars(
+                            checkArgument(input.readUnsignedByte(), SRP_IDENTITY_SIZE_PREDICATE) { "srp identity too long ($it bytes)" },
+                            reverse = false))
         }
 
     }

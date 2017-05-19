@@ -3,13 +3,19 @@ package net.jammos.realmserver.utils
 import java.security.SecureRandom
 import java.util.*
 
+val RANDOM: Random = SecureRandom.getInstanceStrong()
+
+
 inline fun <T: Any, R> some (value: T?, f: (T) -> R): R?
         = if (value != null) f(value) else null
 
-val RANDOM: Random = SecureRandom.getInstanceStrong()
+inline fun <T> checkArgument(value: T, condition: (T) -> Boolean, message: (T) -> String): T {
+    checkArgument(condition(value)) { message(value) }
+    return value
+}
 
-fun checkArgument(value: Boolean, message: () -> String) {
-    if (!value) rejectArgument(message())
+inline fun checkArgument(condition: Boolean, message: () -> String) {
+    if (!condition) rejectArgument(message())
 }
 
 fun rejectArgument(message: String): Nothing {
