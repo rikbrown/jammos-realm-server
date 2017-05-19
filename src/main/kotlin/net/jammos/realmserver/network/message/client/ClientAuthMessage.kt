@@ -1,8 +1,8 @@
 package net.jammos.realmserver.network.message.client
 
 import mu.KLogging
-import net.jammos.realmserver.network.AuthCommand
 import net.jammos.realmserver.data.ClientAuthLogonChallengeMessage
+import net.jammos.realmserver.network.AuthCommand
 import java.io.DataInput
 
 interface ClientAuthMessage {
@@ -14,10 +14,10 @@ interface ClientAuthMessage {
 
         fun read(input: DataInput): ClientAuthMessage {
             // Read auth command
-            val authCommand = AuthCommand.read(input) ?: throw RuntimeException("Unknown command")
+            val authCommand = AuthCommand.read(input) ?: throw IllegalArgumentException("Unknown command")
             logger.debug { "Read authCommand($authCommand)"}
 
-            val handler = lookup[authCommand] ?: throw RuntimeException("Unsupported command")
+            val handler = lookup[authCommand] ?: throw IllegalArgumentException("Unsupported command")
 
             // Delegate rest to the individual reader
             logger.debug { "Delegating to $handler" }

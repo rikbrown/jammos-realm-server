@@ -2,6 +2,7 @@ package net.jammos.realmserver.session
 
 import mu.KLogging
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.Instant.now
 import java.util.*
@@ -14,13 +15,21 @@ interface SessionManager {
     fun closeSession(sessionId: SessionId)
 }
 
+/**
+ * An in-memory implementation of a session manager
+ */
 class InMemorySessionManager(private val clock: Clock = Clock.systemUTC()): SessionManager {
-    companion object: KLogging()
+    companion object: KLogging() {
+        /**
+         * Duration until a session is considered dead, even if resumed
+         */
+        private val SESSION_EXPIRY_TIMEOUT = Duration.ofMinutes(5)
+    }
 
     private val sessionMap: ConcurrentMap<SessionId, Session> = ConcurrentHashMap()
 
     override fun registerSession(sessionId: SessionId): Session {
-        logger.debug { "Registering new/existing sessionId($sessionId)" }
+        logger.debug { "Registering new/existing session: $sessionId" }
         val session = sessionMap[sessionId]
                 // if present, update ping
                 ?.copyPinged(clock)
@@ -33,15 +42,22 @@ class InMemorySessionManager(private val clock: Clock = Clock.systemUTC()): Sess
     }
 
     override fun resumeSession(sessionId: SessionId): Session? {
-        sessionMap[sessionId] = sessionMap[sessionId]
+        logger.debug { "Marking $sessionId as resumed" }
+        val session = getSession(sessionId)
                 // if present, update ping
                 ?.copyPinged(clock)
+        sessionMap[sessionId] = session
+        return session
     }
 
     override fun closeSession(sessionId: SessionId) {
-        logger.debug { "Closing sessionId($sessionId)" }
+        logger.debug { "Closing session: $sessionId" }
         sessionMap.remove(sessionId)
     }
+
+    private fun getSession(sessionId: SessionId): Session? = sessionMap[sessionId]
+            // retrieve session as long as it has not expired
+            ?.takeIf { it.lastPingedAt > now(clock) - SESSION_EXPIRY_TIMEOUT }
 
 }
 

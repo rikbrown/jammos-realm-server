@@ -1,4 +1,4 @@
-package net.jammos.realmserver.realms
+package net.jammos.realmserver.realm
 
 enum class RealmFlag(val value: Int) {
     REALM_FLAG_NONE(0x00),

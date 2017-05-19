@@ -11,7 +11,6 @@ class ClientAuthMessageDecoder: ByteToMessageDecoder() {
     companion object : KLogging()
 
     override fun decode(ctx: ChannelHandlerContext, buf: ByteBuf, out: MutableList<Any>) {
-
         try {
             val message = ClientAuthMessage.read(buf.asDataInput())
             logger.debug { "Read message: $message" }
@@ -19,9 +18,10 @@ class ClientAuthMessageDecoder: ByteToMessageDecoder() {
 
         } catch (e: Exception) {
             logger.warn(e) { "Error decoding client message"}
-        }
 
-        buf.clear()
+        } finally {
+            buf.clear()
+        }
     }
 
 }

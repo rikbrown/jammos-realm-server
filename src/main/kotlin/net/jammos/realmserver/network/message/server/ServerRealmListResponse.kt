@@ -2,8 +2,8 @@ package net.jammos.realmserver.network.message.server
 
 import mu.KLogging
 import net.jammos.realmserver.network.AuthCommand
-import net.jammos.realmserver.realms.Realm
-import net.jammos.realmserver.realms.RealmFlag
+import net.jammos.realmserver.realm.Realm
+import net.jammos.realmserver.realm.RealmFlag
 import java.io.ByteArrayOutputStream
 import java.io.DataOutput
 import java.io.DataOutputStream

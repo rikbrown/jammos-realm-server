@@ -17,7 +17,7 @@ import net.jammos.realmserver.network.AuthServerHandler
 import net.jammos.realmserver.network.SessionHandler
 import net.jammos.realmserver.network.message.coding.ClientAuthMessageDecoder
 import net.jammos.realmserver.network.message.coding.ServerAuthMessageEncoder
-import net.jammos.realmserver.realms.InMemoryRealmDao
+import net.jammos.realmserver.realm.InMemoryRealmDao
 import net.jammos.realmserver.session.InMemorySessionManager
 import java.net.InetAddress
 

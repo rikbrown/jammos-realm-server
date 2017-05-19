@@ -8,7 +8,7 @@ import net.jammos.realmserver.auth.AuthDao
 import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.network.step.LogonChallengeStep
 import net.jammos.realmserver.network.step.Step
-import net.jammos.realmserver.realms.RealmDao
+import net.jammos.realmserver.realm.RealmDao
 import net.jammos.realmserver.session.SessionManager
 import net.jammos.realmserver.utils.extensions.asSessionId
 

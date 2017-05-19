@@ -8,7 +8,7 @@ import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.data.ClientAuthLogonChallengeMessage
 import net.jammos.realmserver.network.message.server.ServerAuthLogonChallengeResponse
 import net.jammos.realmserver.network.message.server.ServerAuthLogonChallengeResponse.SuccessData
-import net.jammos.realmserver.realms.RealmDao
+import net.jammos.realmserver.realm.RealmDao
 import net.jammos.realmserver.utils.ByteArrays
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
 

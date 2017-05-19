@@ -1,4 +1,4 @@
-package net.jammos.realmserver.realms
+package net.jammos.realmserver.realm
 
 import net.jammos.realmserver.auth.Username
 import net.jammos.realmserver.auth.Username.Username.username

@@ -6,7 +6,7 @@ import net.jammos.realmserver.auth.AuthDao
 import net.jammos.realmserver.auth.Username
 import net.jammos.realmserver.network.message.client.ClientRealmListMessage
 import net.jammos.realmserver.network.message.server.ServerRealmListResponse
-import net.jammos.realmserver.realms.RealmDao
+import net.jammos.realmserver.realm.RealmDao
 
 class RealmListStep(
         val username: Username,

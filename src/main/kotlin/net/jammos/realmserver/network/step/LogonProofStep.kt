@@ -8,7 +8,7 @@ import net.jammos.realmserver.auth.User
 import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.network.message.client.ClientAuthLogonProofMessage
 import net.jammos.realmserver.network.message.server.ServerAuthLogonProofResponse
-import net.jammos.realmserver.realms.RealmDao
+import net.jammos.realmserver.realm.RealmDao
 import net.jammos.realmserver.utils.extensions.digest
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
 
