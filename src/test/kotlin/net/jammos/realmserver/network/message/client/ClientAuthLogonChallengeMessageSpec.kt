@@ -1,6 +1,7 @@
 package net.jammos.realmserver.network.message.client
 
 import com.google.common.io.ByteStreams
+import org.amshove.kluent.`should be instance of`
 import org.amshove.kluent.`should equal`
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given
@@ -13,10 +14,10 @@ object ClientAuthLogonChallengeMessageSpec : Spek({
     val CHALLENGE_BYTES = DatatypeConverter.parseHexBinary("00032600576f5700010c01f3163638780058534f0053556e65a8fdffff7f0000010852494b42524f574e")
 
     given("a challenge") {
-        val challenge = CHALLENGE_BYTES.toPacketWithoutCommand()
+        val challenge = { ByteStreams.newDataInput(CHALLENGE_BYTES) }
 
         on("readBody") {
-            val authMessage = ClientAuthLogonChallengeMessage.readBody(challenge)
+            val authMessage = ClientAuthLogonChallengeMessage.readBody(challenge().dropOneByte())
 
             it("should read correct fields") {
                 authMessage.gameName `should equal` "WoW"
@@ -32,13 +33,22 @@ object ClientAuthLogonChallengeMessageSpec : Spek({
                 authMessage.srpIdentity `should equal` "RIKBROWN"
             }
         }
+
+        on("ClientAuthMessage.read") {
+            val authMessage = ClientAuthMessage.read(challenge())
+            it("should read the correct object") {
+                authMessage `should be instance of` ClientAuthLogonChallengeMessage::class
+            }
+        }
     }
 })
 
-private fun ByteArray.toPacketWithoutCommand(): DataInput {
-    val challenge = ByteStreams.newDataInput(this)
-    challenge.readByte() // skip command because this was read earlier
-    return challenge
+/**
+ * drop a byte to account for the command which is read earlier
+ */
+fun DataInput.dropOneByte(): DataInput {
+    readByte()
+    return this
 }
 
 

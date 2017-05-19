@@ -1,11 +1,13 @@
 package net.jammos.realmserver.utils.types
 
-import net.jammos.realmserver.utils.*
+import net.jammos.realmserver.utils.RANDOM
 import net.jammos.realmserver.utils.extensions.bigEndian
 import net.jammos.realmserver.utils.extensions.hexString
 import net.jammos.realmserver.utils.extensions.xor
+import net.jammos.realmserver.utils.some
 import java.math.BigInteger
 import java.security.MessageDigest
+import javax.xml.bind.DatatypeConverter
 
 /**
  * Represents a big unsigned integer out of which a little-endian byte array can be obtained.
@@ -22,6 +24,11 @@ class BigUnsignedInteger(val big_integer: BigInteger) {
         fun random(bytes: Int): BigUnsignedInteger {
             return BigUnsignedInteger(BigInteger(bytes * 8, RANDOM))
         }
+
+        fun ofHexString(hexString: String): BigUnsignedInteger {
+            return BigUnsignedInteger(DatatypeConverter.parseHexBinary(hexString))
+        }
+
     }
 
     init {
