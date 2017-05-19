@@ -4,8 +4,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.util.ReferenceCountUtil
 import mu.KLogging
-import net.jammos.realmserver.auth.AuthDao
-import net.jammos.realmserver.auth.crypto.CryptoManager
+import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.network.step.LogonChallengeStep
 import net.jammos.realmserver.network.step.Step
 import net.jammos.realmserver.realm.RealmDao
@@ -13,21 +12,17 @@ import net.jammos.realmserver.session.SessionManager
 import net.jammos.realmserver.utils.extensions.asSessionId
 
 class AuthServerHandler(
-        cryptoManager: CryptoManager,
         private val sessionManager: SessionManager,
-        authDao: AuthDao,
-        realmDao: RealmDao) : ChannelInboundHandlerAdapter() {
+        private val authManager: AuthManager,
+        private val realmDao: RealmDao) : ChannelInboundHandlerAdapter() {
 
     companion object: KLogging()
 
     // First step is waiting for a login challenge
-    private var step: Step<*, *> = LogonChallengeStep(cryptoManager, authDao, realmDao)
+    private var step: Step<*, *> = LogonChallengeStep(authManager, realmDao)
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         try {
-            //val session = sessionManager.registerSession(ctx.asSessionId())
-
-            //logger.info { "Session: ${session.sessionId}" }
             logger.info { "Read new message: $msg" }
 
             // Handle message and potentially move to the next step

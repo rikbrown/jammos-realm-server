@@ -37,6 +37,7 @@ enum class AuthCommand(override val value: Int): WriteableByte {
 enum class AuthResult(override val value: Int): WriteableByte {
     SUCCESS(0x00),
     BANNED(0x03),
+    SUSPENDED(0x0C),
     UNKNOWN_ACCOUNT(0x04),
     INCORRECT_PASSWORD(0x05)
 }

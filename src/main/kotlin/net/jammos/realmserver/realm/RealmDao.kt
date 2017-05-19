@@ -38,7 +38,6 @@ class InMemoryRealmDao: RealmDao {
                     RealmId("test1") to 1,
                     RealmId("test2") to 2))
 
-
     override fun listRealms(): Set<Realm> {
         return realms
     }

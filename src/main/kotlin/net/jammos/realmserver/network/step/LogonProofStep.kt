@@ -3,6 +3,7 @@ package net.jammos.realmserver.network.step
 import com.google.common.base.Preconditions.checkArgument
 import mu.KLogging
 import net.jammos.realmserver.auth.AuthDao
+import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.network.AuthResult
 import net.jammos.realmserver.auth.User
 import net.jammos.realmserver.auth.crypto.CryptoManager
@@ -18,8 +19,7 @@ class LogonProofStep(
         private val B: BigUnsignedInteger,
         private val bSecret: BigUnsignedInteger,
 
-        private val cryptoManager: CryptoManager,
-        private val authDao: AuthDao,
+        private val authManager: AuthManager,
         private val realmDao: RealmDao) : Step<ClientAuthLogonProofMessage, ServerAuthLogonProofResponse>(ClientAuthLogonProofMessage::class) {
 
     companion object : KLogging() {
@@ -28,36 +28,21 @@ class LogonProofStep(
         }
     }
 
-    private val N = cryptoManager.constants.N
-    private val sha1 = cryptoManager.sha1()
-
     override fun handle0(msg: ClientAuthLogonProofMessage): ResponseAndNextStep<ServerAuthLogonProofResponse> {
         logger.debug { "Handling logon proof for user(${user.username})" }
 
-        checkArgument(!((msg.A % N).isZero), "SRP safeguard abort == 0")
+        val M2 = authManager.proofLogon(
+                user = user,
+                B = B,
+                bSecret = bSecret,
+                A = msg.A,
+                M1 = msg.M1)
 
-        val u = BigUnsignedInteger(sha1.digest(msg.A.bytes, B.bytes))
-        val S = (msg.A * user.verifier.expMod(u, N)).expMod(bSecret, N)
-
-        val K = cryptoManager.hashSessionKey(S)
-        val M1s = cryptoManager.M1(
-                user.username.toByteArray(Charsets.UTF_8),
-                user.salt,
-                msg.A,
-                B,
-                K)
-
-        // Password match fail :(
-        if (msg.M1 != M1s) {
+        // Proof fail (password mismatch)
+        if (M2 == null) {
             logger.info { "Password mismatch for ${user.username}" }
             return errorResponse(AuthResult.INCORRECT_PASSWORD)
         }
-
-        // Ok!
-        val M2 = sha1.digest(
-                msg.A.bytes,
-                msg.M1.bytes,
-                K.bytes)
 
         // Create response
         val response = ServerAuthLogonProofResponse(AuthResult.SUCCESS,
@@ -70,7 +55,7 @@ class LogonProofStep(
                 nextStep = RealmListStep(
                         username = user.username,
 
-                        authDao = authDao,
+                        authManager = authManager,
                         realmDao = realmDao)
         )
 

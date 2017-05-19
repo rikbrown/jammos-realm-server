@@ -2,7 +2,7 @@ package net.jammos.realmserver.network.step
 
 import com.google.common.base.Preconditions.checkArgument
 import mu.KLogging
-import net.jammos.realmserver.auth.AuthDao
+import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.auth.Username
 import net.jammos.realmserver.network.message.client.ClientRealmListMessage
 import net.jammos.realmserver.network.message.server.ServerRealmListResponse
@@ -11,7 +11,7 @@ import net.jammos.realmserver.realm.RealmDao
 class RealmListStep(
         val username: Username,
 
-        val authDao: AuthDao,
+        val authManager: AuthManager,
         val realmDao: RealmDao) : Step<ClientRealmListMessage, ServerRealmListResponse>(ClientRealmListMessage::class) {
 
     companion object : KLogging()
@@ -21,8 +21,8 @@ class RealmListStep(
 
         // validate user (happened at auth, but things change)
         // TODO: exception or can we return the auth error like challenge? prob not
-        val user = authDao.getUser(username) ?: throw IllegalArgumentException("user($username) tried to logon but does not exist")
-        checkArgument(!user.isBanned, "user($username) tried to logon but is banned")
+        val user = authManager.getUser(username) ?: throw IllegalArgumentException("user($username) tried to logon but does not exist")
+        checkArgument(user.suspension != null, "user($username) tried to logon but is suspended")
 
         // get realms
         val realms = realmDao.listRealms()

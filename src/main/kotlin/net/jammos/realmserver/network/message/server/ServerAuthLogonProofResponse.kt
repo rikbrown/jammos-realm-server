@@ -1,6 +1,7 @@
 package net.jammos.realmserver.network.message.server
 
 import com.google.common.base.Preconditions
+import net.jammos.realmserver.auth.M2ByteArray
 import net.jammos.realmserver.network.AuthCommand
 import net.jammos.realmserver.network.AuthResult
 import java.io.DataOutput
@@ -17,15 +18,15 @@ data class ServerAuthLogonProofResponse(
     }
 
     data class SuccessData(
-            val M2: ByteArray,
+            val M2: M2ByteArray,
             val unk2: Int = 0) {
 
         init {
-            Preconditions.checkArgument(M2.size == 20)
+            Preconditions.checkArgument(M2.m2.size == 20)
         }
 
         fun write(output: DataOutput) {
-            output.write(M2)
+            output.write(M2.m2)
             output.writeInt(unk2)
         }
     }

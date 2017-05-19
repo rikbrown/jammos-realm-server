@@ -3,6 +3,9 @@ package net.jammos.realmserver.realm
 import net.jammos.realmserver.utils.types.InternetAddress
 import java.util.*
 
+/**
+ * TODO: supported versions
+ */
 data class Realm(
         val id: RealmId,
         val name: String,

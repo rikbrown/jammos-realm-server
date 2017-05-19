@@ -2,12 +2,13 @@ package net.jammos.realmserver.auth
 
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
 import java.nio.charset.Charset
+import java.time.Instant
 
 data class User(
         val username: Username,
         val salt: ByteArray,
         val verifier: BigUnsignedInteger,
-        val isBanned: Boolean = false)
+        val suspension: UserSuspension? = null)
 
 data class Username private constructor(val username: String) {
     companion object Username {
@@ -19,3 +20,6 @@ data class Username private constructor(val username: String) {
     }
 }
 
+data class UserSuspension(
+        val start: Instant,
+        val end: Instant?)

@@ -67,8 +67,6 @@ data class ServerRealmListResponse(
             // (playerCount / maxPlayerCount * 2)
             output.writeFloat(realm.playerCount.toFloat() / realm.maxPlayerCount.toFloat() * 2)
 
-            //output.writeFloat(((1000/1000)* 2.toFloat())) // pop level (tbc)
-
             output.write(numberOfChars) // number of chars
 
             output.write(1) // realm category (? using timezone on mangos)

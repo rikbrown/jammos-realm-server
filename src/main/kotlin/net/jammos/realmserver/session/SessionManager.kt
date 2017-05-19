@@ -30,19 +30,22 @@ class InMemorySessionManager(private val clock: Clock = Clock.systemUTC()): Sess
 
     override fun registerSession(sessionId: SessionId): Session {
         logger.debug { "Registering new/existing session: $sessionId" }
-        val session = sessionMap[sessionId]
+
+        return sessionMap[sessionId]
                 // if present, update ping
                 ?.copyPinged(clock)
                 // or create new
                 ?: Session(sessionId, now(clock))
-
-        sessionMap[sessionId] = session
-
-        return session
+                // update session map
+                .let {
+                    sessionMap[sessionId] = it
+                    it
+                }
     }
 
     override fun resumeSession(sessionId: SessionId): Session? {
         logger.debug { "Marking $sessionId as resumed" }
+
         val session = getSession(sessionId)
                 // if present, update ping
                 ?.copyPinged(clock)
