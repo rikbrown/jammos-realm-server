@@ -1,10 +1,11 @@
 package net.jammos.realmserver.auth
 
-import com.google.common.base.Preconditions.checkArgument
 import mu.KLogging
 import net.jammos.realmserver.auth.crypto.CryptoManager
+import net.jammos.realmserver.utils.checkArgument
 import net.jammos.realmserver.utils.extensions.digest
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
+import org.omg.CORBA.UnknownUserException
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets.UTF_8
 
@@ -21,24 +22,32 @@ class AuthManager(
 
     fun getUser(username: Username) = authDao.getUser(username)
 
+    /**
+     * Starts a logon challenge for [username] from [ip].
+     *
+     * @return If challenge request is accepted, an [AuthChallenge] will be returned for the client to
+     * respond to
+     * @throws UnknownUserException if the [username] was not recognised
+     * @throws UserSuspendedException if the [username] was suspended/banned
+     */
     fun challengeLogon(
             username: Username,
-            ip: InetAddress): ProofDemand {
+            ip: InetAddress): AuthChallenge {
 
         // banned IP?
-        if (authDao.isIpBanned(ip)) {
-            throw IpBannedException(ip)
-        }
+        authDao.getIpSuspension(ip)
+                ?.let { it.end != null }
+                ?.let { throw IpBannedException(ip, temporary = it) }
 
         // retrieve user
         val user = authDao.getUser(username) ?:
                 // unknown account
                 throw UnknownUserException(username)
 
-        // banned or suspended? FIXME: cleaner?
+        // banned or suspended?
         user.suspension
-                ?.let { it.end == null }
-                ?.let { throw UserSuspendedException(username, it) }
+                ?.let { it.end != null }
+                ?.let { throw UserSuspendedException(username, temporary = it) }
 
         // calculate proof
         val b = BigUnsignedInteger.random(19) // secret ephemeral value
@@ -46,7 +55,7 @@ class AuthManager(
         val s = user.salt
         val B = ((k * v) + g.expMod(b, N)) % N // public ephemeral value
 
-        return ProofDemand(
+        return AuthChallenge(
                 user = user,
                 g = g,
                 N = N,
@@ -55,6 +64,12 @@ class AuthManager(
                 bSecret = b)
     }
 
+    /**
+     * Verifies a logon attempt for the given [user] using the provided proof values.
+     *
+     * @return If successful, the [M2ByteArray] will be returned.  If unsuccessful, null will
+     * be returned.
+     */
     fun proofLogon(
             user: User, // TODO: reload from DAO?
             B: BigUnsignedInteger,
@@ -62,7 +77,7 @@ class AuthManager(
             A: BigUnsignedInteger,
             M1: BigUnsignedInteger): M2ByteArray? {
 
-        checkArgument(!((A % N).isZero), "SRP safeguard abort == 0")
+        checkArgument(!((A % N).isZero)) { "SRP safeguard abort == 0" }
 
         val u = BigUnsignedInteger(sha1.digest(A.bytes, B.bytes))
         val S = (A * user.verifier.expMod(u, N)).expMod(bSecret, N)
@@ -89,7 +104,7 @@ class AuthManager(
     }
 }
 
-data class ProofDemand(
+data class AuthChallenge(
         val user: User,
         val g: BigUnsignedInteger,
         val N: BigUnsignedInteger,
@@ -101,6 +116,8 @@ data class ProofDemand(
 // TODO:delegate?
 data class M2ByteArray(val m2: ByteArray)
 
-class IpBannedException(ip: InetAddress): RuntimeException("IP bsnned: $ip")
+sealed class SuspendedException(message: String, val temporary: Boolean): RuntimeException("$message (temporary=$temporary)")
+class IpBannedException(ip: InetAddress, temporary: Boolean): SuspendedException("IP banned: $ip", temporary)
+class UserSuspendedException(username: Username, temporary: Boolean): SuspendedException("User suspended: $username", temporary)
+
 class UnknownUserException(username: Username): RuntimeException("Unknown username: $username")
-class UserSuspendedException(username: Username, val temporary: Boolean): RuntimeException("User $username suspended temporary($temporary")

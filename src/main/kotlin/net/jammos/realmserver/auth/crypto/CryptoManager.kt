@@ -1,23 +1,17 @@
 package net.jammos.realmserver.auth.crypto
 
 import net.jammos.realmserver.utils.extensions.digest
+import net.jammos.realmserver.utils.extensions.update
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
 import java.security.MessageDigest
 
-data class CryptoConstants(
-        // TODO: implement a thread-local digest
-        val hashProvider: () -> MessageDigest = { MessageDigest.getInstance("SHA-1") },
-        val k: BigUnsignedInteger = BigUnsignedInteger(3),
-        val g: BigUnsignedInteger = BigUnsignedInteger(7),
-        val N: BigUnsignedInteger = BigUnsignedInteger("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7"),
-        val Ng: BigUnsignedInteger = (N * hashProvider()) xor (g * hashProvider()))
+private val COLON = ":".toByteArray(Charsets.UTF_8)
 
-class CryptoManager(
-        val constants: CryptoConstants) {
-
-    private companion object {
-        val COLON = ":".toByteArray(Charsets.UTF_8)
-    }
+/**
+ * Cryptographic utility functions.
+ * TODO: more elegant name?
+ */
+class CryptoManager(val constants: CryptoConstants = CryptoConstants()) {
 
     fun sha1(): MessageDigest {
         return constants.hashProvider()
@@ -31,12 +25,12 @@ class CryptoManager(
 
         val sha1 = sha1()
         val name_hash = sha1.digest(name_utf8)
-        sha1.update(constants.Ng.bytes)
+        sha1.update(constants.Ng)
         sha1.update(name_hash)
         sha1.update(salt)
-        sha1.update(A.bytes)
-        sha1.update(B.bytes)
-        sha1.update(K.bytes)
+        sha1.update(A)
+        sha1.update(B)
+        sha1.update(K)
         return BigUnsignedInteger(sha1.digest())
     }
 
@@ -73,3 +67,10 @@ class CryptoManager(
 
 }
 
+data class CryptoConstants(
+        // TODO: implement a thread-local digest
+        val hashProvider: () -> MessageDigest = { MessageDigest.getInstance("SHA-1") },
+        val k: BigUnsignedInteger = BigUnsignedInteger(3),
+        val g: BigUnsignedInteger = BigUnsignedInteger(7),
+        val N: BigUnsignedInteger = BigUnsignedInteger("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7"),
+        val Ng: BigUnsignedInteger = (N * hashProvider()) xor (g * hashProvider()))

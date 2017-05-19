@@ -8,7 +8,10 @@ data class User(
         val username: Username,
         val salt: ByteArray,
         val verifier: BigUnsignedInteger,
-        val suspension: UserSuspension? = null)
+        val suspension: UserSuspension? = null) {
+
+    val isSuspended get() = suspension != null
+}
 
 data class Username private constructor(val username: String) {
     companion object Username {

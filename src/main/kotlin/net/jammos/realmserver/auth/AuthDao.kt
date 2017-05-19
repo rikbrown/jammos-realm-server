@@ -4,28 +4,27 @@ import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.utils.ByteArrays.randomBytes
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets.UTF_8
-import java.time.Clock
 import java.time.Instant
-import java.time.Instant.now
-import java.util.Collections.synchronizedSet
 import java.util.concurrent.ConcurrentHashMap
 
 interface AuthDao {
     fun createUser(username: Username, password: String): User
     fun getUser(username: Username): User?
-    fun suspendUser(user: User, end: Instant?): User?
+    fun suspendUser(user: User, start: Instant, end: Instant?): User?
+    fun recordUserLogon(user: User, ip: InetAddress, at: Instant, successful: Boolean = true)
 
     // TODO: somewhere else?
-    fun banIp(ip: InetAddress)
-    fun isIpBanned(ip: InetAddress): Boolean
+    fun suspendIp(ip: InetAddress, end: Instant?)
+    fun getIpSuspension(ip: InetAddress): IpSuspension?
 
 }
 
-class InMemoryAuthDao(
-        private val clock: Clock = Clock.systemUTC(),
-        private val cryptoManager: CryptoManager): AuthDao {
+data class IpSuspension(val end: Instant?)
+
+class InMemoryAuthDao(private val cryptoManager: CryptoManager): AuthDao {
+
     val users = ConcurrentHashMap<Username, User>()
-    val bannedIps: MutableSet<InetAddress> = synchronizedSet(HashSet<InetAddress>())
+    val ipBans = ConcurrentHashMap<InetAddress, IpSuspension>()
 
     override fun createUser(username: Username, password: String): User {
 
@@ -48,21 +47,26 @@ class InMemoryAuthDao(
 
     override fun getUser(username: Username): User? = users[username]
 
-    override fun suspendUser(user: User, end: Instant?): User? {
-        return users[user.username]?.copy(
+    override fun suspendUser(user: User, start: Instant, end: Instant?): User? {
+        return users[user.username]
+            ?.copy(
                 suspension = UserSuspension(
-                        start = now(clock),
-                        end = end))
+                    start = start,
+                    end = end))
             ?.let {
                 users[user.username] = it
-                return it
+                it
             }
     }
 
-    override fun banIp(ip: InetAddress) {
-        bannedIps += ip
+    override fun recordUserLogon(user: User, ip: InetAddress, at: Instant, successful: Boolean) {
+        // TODO: implement this
     }
 
-    override fun isIpBanned(ip: InetAddress) = bannedIps.contains(ip)
+    override fun suspendIp(ip: InetAddress, end: Instant?) {
+        ipBans[ip] = IpSuspension(end)
+    }
+
+    override fun getIpSuspension(ip: InetAddress) = ipBans[ip]
 
 }

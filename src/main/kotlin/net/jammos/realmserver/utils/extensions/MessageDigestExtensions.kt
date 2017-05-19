@@ -1,5 +1,6 @@
 package net.jammos.realmserver.utils.extensions
 
+import net.jammos.realmserver.utils.types.BigUnsignedInteger
 import java.security.MessageDigest
 
 /**
@@ -8,4 +9,11 @@ import java.security.MessageDigest
 fun MessageDigest.digest(vararg byteArrays: ByteArray): ByteArray {
     byteArrays.forEach { update(it) }
     return digest()
+}
+
+/**
+ * Update the message digest using the bytes of a big unsigned integer
+ */
+fun MessageDigest.update(i: BigUnsignedInteger) {
+    update(i.bytes)
 }

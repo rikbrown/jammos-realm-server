@@ -1,12 +1,13 @@
 package net.jammos.realmserver.network.step
 
-import com.google.common.base.Preconditions.checkArgument
 import mu.KLogging
 import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.auth.Username
 import net.jammos.realmserver.network.message.client.ClientRealmListMessage
 import net.jammos.realmserver.network.message.server.ServerRealmListResponse
 import net.jammos.realmserver.realm.RealmDao
+import net.jammos.realmserver.utils.checkArgument
+import net.jammos.realmserver.utils.rejectArgument
 
 class RealmListStep(
         val username: Username,
@@ -19,10 +20,9 @@ class RealmListStep(
     override fun handle0(msg: ClientRealmListMessage): ResponseAndNextStep<ServerRealmListResponse> {
         logger.debug { "Handling realm list for apparent user($username)" }
 
-        // validate user (happened at auth, but things change)
-        // TODO: exception or can we return the auth error like challenge? prob not
-        val user = authManager.getUser(username) ?: throw IllegalArgumentException("user($username) tried to logon but does not exist")
-        checkArgument(user.suspension != null, "user($username) tried to logon but is suspended")
+        // validate user still exists and is not suspended at this point
+        val user = authManager.getUser(username) ?: rejectArgument("user($username) tried to logon but does not exist")
+        checkArgument(!user.isSuspended) { "user($username) tried to logon but is suspended" }
 
         // get realms
         val realms = realmDao.listRealms()

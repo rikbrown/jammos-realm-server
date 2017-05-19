@@ -2,6 +2,7 @@ package net.jammos.realmserver.realm
 
 import net.jammos.realmserver.auth.Username
 import net.jammos.realmserver.auth.Username.Username.username
+import net.jammos.realmserver.utils.extensions.get
 import net.jammos.realmserver.utils.types.InternetAddress
 
 interface RealmDao {
@@ -43,6 +44,6 @@ class InMemoryRealmDao: RealmDao {
     }
 
     override fun getCharacterCount(realmId: RealmId, username: Username): Int {
-        return realmCharacterCount[username]?.get(realmId)?:0
+        return realmCharacterCount[username][realmId] ?: 0
     }
 }

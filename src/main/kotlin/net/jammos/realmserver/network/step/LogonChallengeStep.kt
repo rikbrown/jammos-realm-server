@@ -2,8 +2,8 @@ package net.jammos.realmserver.network.step
 
 import mu.KLogging
 import net.jammos.realmserver.auth.AuthManager
+import net.jammos.realmserver.auth.SuspendedException
 import net.jammos.realmserver.auth.UnknownUserException
-import net.jammos.realmserver.auth.UserSuspendedException
 import net.jammos.realmserver.auth.Username.Username.username
 import net.jammos.realmserver.data.ClientAuthLogonChallengeMessage
 import net.jammos.realmserver.network.AuthResult
@@ -32,18 +32,19 @@ class LogonChallengeStep(
         // challenge logon
         val proofDemand = try {
              authManager.challengeLogon(username, msg.ip)
+
+        // unknown user?
         } catch (e: UnknownUserException) {
             logger.info { "Unknown user attempted logon: $username" }
             return errorResponse(AuthResult.UNKNOWN_ACCOUNT)
 
-        } catch (e: UserSuspendedException) {
-            logger.info { "Suspended user attempted logon: $username (temp=${e.temporary})" }
+        // suspended user?
+        } catch (e: SuspendedException) {
+            logger.info { "Suspended user attempted logon by $username - ${e.message}" }
 
-            // FIXME: elegance
-            if (e.temporary) {
-                return errorResponse(AuthResult.SUSPENDED)
-            } else {
-                return errorResponse(AuthResult.BANNED)
+            return when(e.temporary) {
+                true -> errorResponse(AuthResult.SUSPENDED)
+                false -> errorResponse(AuthResult.BANNED)
             }
         }
 

@@ -12,7 +12,6 @@ import io.netty.handler.timeout.ReadTimeoutHandler
 import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.auth.InMemoryAuthDao
 import net.jammos.realmserver.auth.Username.Username.username
-import net.jammos.realmserver.auth.crypto.CryptoConstants
 import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.network.AuthServerHandler
 import net.jammos.realmserver.network.SessionHandler
@@ -28,7 +27,7 @@ class AuthServer {
         private val TIMEOUT = 10
         private val PORT = 3724
 
-        private val cryptoManager = CryptoManager(constants = CryptoConstants())
+        private val cryptoManager = CryptoManager()
         private val authDao = InMemoryAuthDao(cryptoManager = cryptoManager)
         private val realmDao = InMemoryRealmDao()
         private val sessionManager = InMemorySessionManager()
@@ -37,10 +36,12 @@ class AuthServer {
         init {
             authDao.createUser(username("rikbrown"), "test1234")
             authDao.suspendUser(
-                    user = authDao.createUser(username("banned"), "foo"),
+                    user = authDao.createUser(username("banned"), "banned"),
+                    start = now(),
                     end = null)
             authDao.suspendUser(
-                    user = authDao.createUser(username("banned"), "foo"),
+                    user = authDao.createUser(username("suspended"), "suspended"),
+                    start = now(),
                     end = now())
         }
 
