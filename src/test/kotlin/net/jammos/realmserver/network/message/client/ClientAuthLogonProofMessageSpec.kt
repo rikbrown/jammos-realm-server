@@ -1,6 +1,7 @@
 package net.jammos.realmserver.network.message.client
 
 import com.google.common.io.ByteStreams
+import net.jammos.realmserver.test.utils.dropOneByte
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
 import org.amshove.kluent.`should be instance of`
 import org.amshove.kluent.`should equal`

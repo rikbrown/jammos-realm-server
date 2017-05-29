@@ -1,6 +1,7 @@
 package net.jammos.realmserver.network.message.client
 
 import com.google.common.io.ByteStreams
+import net.jammos.realmserver.test.utils.dropOneByte
 import org.amshove.kluent.`should be instance of`
 import org.amshove.kluent.`should equal`
 import org.jetbrains.spek.api.Spek
@@ -42,14 +43,6 @@ object ClientAuthLogonChallengeMessageSpec : Spek({
         }
     }
 })
-
-/**
- * drop a byte to account for the command which is read earlier
- */
-fun DataInput.dropOneByte(): DataInput {
-    readByte()
-    return this
-}
 
 
 /*

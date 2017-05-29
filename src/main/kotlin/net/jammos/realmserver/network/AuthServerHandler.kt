@@ -61,6 +61,7 @@ class AuthServerHandler(
     @Suppress("OverridingDeprecatedMember") // deprecation warning is only on one base class
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         logger.error(cause) { "Caught exception" }
+        ctx.disconnect()
         ctx.close()
     }
 

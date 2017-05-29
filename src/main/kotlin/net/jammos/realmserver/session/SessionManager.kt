@@ -1,7 +1,9 @@
 package net.jammos.realmserver.session
 
 import mu.KLogging
+import net.jammos.realmserver.utils.extensions.seconds
 import java.time.Clock
+import java.time.Clock.systemUTC
 import java.time.Duration
 import java.time.Instant
 import java.time.Instant.now
@@ -18,12 +20,12 @@ interface SessionManager {
 /**
  * An in-memory implementation of a session manager
  */
-class InMemorySessionManager(private val clock: Clock = Clock.systemUTC()): SessionManager {
+class InMemorySessionManager(private val clock: Clock = systemUTC()): SessionManager {
     companion object: KLogging() {
         /**
          * Duration until a session is considered dead, even if resumed
          */
-        private val SESSION_EXPIRY_TIMEOUT = Duration.ofMinutes(5)
+        private val SESSION_EXPIRY_TIMEOUT = 10.seconds
     }
 
     private val sessionMap: ConcurrentMap<SessionId, Session> = ConcurrentHashMap()
@@ -49,7 +51,15 @@ class InMemorySessionManager(private val clock: Clock = Clock.systemUTC()): Sess
         val session = getSession(sessionId)
                 // if present, update ping
                 ?.copyPinged(clock)
-        sessionMap[sessionId] = session
+
+        if (session == null) {
+            logger.info { "$sessionId did not exist or has expired" }
+            closeSession(sessionId)
+
+        } else {
+            sessionMap[sessionId] = session
+        }
+
         return session
     }
 
@@ -60,7 +70,7 @@ class InMemorySessionManager(private val clock: Clock = Clock.systemUTC()): Sess
 
     private fun getSession(sessionId: SessionId): Session? = sessionMap[sessionId]
             // retrieve session as long as it has not expired
-            ?.takeIf { it.lastPingedAt > now(clock) - SESSION_EXPIRY_TIMEOUT }
+            ?.takeIf { it.startedAt > now(clock) - SESSION_EXPIRY_TIMEOUT }
 
 }
 
