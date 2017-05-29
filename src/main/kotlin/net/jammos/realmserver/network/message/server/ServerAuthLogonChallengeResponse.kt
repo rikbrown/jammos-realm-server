@@ -44,7 +44,7 @@ data class ServerAuthLogonChallengeResponse(
             // write s, size 32
             output.write(s)
 
-            // write unk3, padded to 16
+            // write unk3, size 16
             output.write(unk3)
 
             // write security flags
