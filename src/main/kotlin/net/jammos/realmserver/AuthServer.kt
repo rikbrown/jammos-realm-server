@@ -14,11 +14,9 @@ import net.jammos.realmserver.auth.InMemoryAuthDao
 import net.jammos.realmserver.auth.Username.Username.username
 import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.network.AuthServerHandler
-import net.jammos.realmserver.network.SessionHandler
 import net.jammos.realmserver.network.message.coding.ClientAuthMessageDecoder
 import net.jammos.realmserver.network.message.coding.ServerAuthMessageEncoder
 import net.jammos.realmserver.realm.InMemoryRealmDao
-import net.jammos.realmserver.session.InMemorySessionManager
 import java.net.InetAddress
 import java.time.Instant.now
 
@@ -30,7 +28,6 @@ class AuthServer {
         private val cryptoManager = CryptoManager()
         private val authDao = InMemoryAuthDao(cryptoManager = cryptoManager)
         private val realmDao = InMemoryRealmDao()
-        private val sessionManager = InMemorySessionManager()
         private val authManager = AuthManager(cryptoManager, authDao)
 
         init {
@@ -69,8 +66,7 @@ class AuthServer {
                                         ClientAuthMessageDecoder(),
                                         ServerAuthMessageEncoder(),
                                         ReadTimeoutHandler(TIMEOUT),
-                                        SessionHandler(sessionManager),
-                                        AuthServerHandler(sessionManager, authManager, realmDao))
+                                        AuthServerHandler(authManager, realmDao))
                             }
                         })
 

@@ -9,7 +9,7 @@ import java.io.DataInput
 data class ClientAuthLogonProofMessage(
         val A: BigUnsignedInteger,
         val M1: BigUnsignedInteger,
-        val crc_hash: ByteArray,
+        val crc_hash: ByteArray, // FIXME: change all ByteArrays to sth immutable
         val numberOfKeys: Int,
         val securityFlags: Int
 ): ClientAuthMessage {

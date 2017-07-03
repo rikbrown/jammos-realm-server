@@ -8,13 +8,10 @@ import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.network.step.LogonChallengeStep
 import net.jammos.realmserver.network.step.Step
 import net.jammos.realmserver.realm.RealmDao
-import net.jammos.realmserver.session.SessionManager
-import net.jammos.realmserver.utils.extensions.asSessionId
 
 class AuthServerHandler(
-        private val sessionManager: SessionManager,
-        private val authManager: AuthManager,
-        private val realmDao: RealmDao) : ChannelInboundHandlerAdapter() {
+        authManager: AuthManager,
+        realmDao: RealmDao) : ChannelInboundHandlerAdapter() {
 
     companion object: KLogging()
 
@@ -52,10 +49,6 @@ class AuthServerHandler(
     override fun channelReadComplete(ctx: ChannelHandlerContext) {
         logger.debug { "Channel read complete" }
         ctx.flush()
-    }
-
-    override fun channelUnregistered(ctx: ChannelHandlerContext) {
-        sessionManager.closeSession(ctx.asSessionId())
     }
 
     @Suppress("OverridingDeprecatedMember") // deprecation warning is only on one base class
