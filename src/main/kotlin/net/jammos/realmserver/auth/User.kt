@@ -6,7 +6,7 @@ import java.time.Instant
 
 data class User(
         val username: Username,
-        val salt: ByteArray,
+        val salt: SaltByteArray,
         val verifier: BigUnsignedInteger,
         val suspension: UserSuspension? = null) {
 
@@ -21,8 +21,10 @@ data class Username private constructor(val username: String) {
     fun toByteArray(charset: Charset): ByteArray {
         return username.toByteArray(charset)
     }
+
+    override fun toString() = username
 }
 
 data class UserSuspension(
         val start: Instant,
-        val end: Instant?)
+        val end: Instant? = null)

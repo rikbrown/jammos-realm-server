@@ -5,6 +5,7 @@ import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.utils.checkArgument
 import net.jammos.realmserver.utils.extensions.digest
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
+import net.jammos.realmserver.utils.types.ComparableByteArray
 import org.omg.CORBA.UnknownUserException
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets.UTF_8
@@ -109,12 +110,12 @@ data class AuthChallenge(
         val g: BigUnsignedInteger,
         val N: BigUnsignedInteger,
         val B: BigUnsignedInteger,
-        val s: ByteArray,
+        val s: SaltByteArray,
         val bSecret: BigUnsignedInteger
 )
 
-// TODO:delegate?
-data class M2ByteArray(val m2: ByteArray)
+class M2ByteArray(bytes: ByteArray): ComparableByteArray(bytes)
+class SaltByteArray(bytes: ByteArray): ComparableByteArray(bytes)
 
 sealed class SuspendedException(message: String, val temporary: Boolean): RuntimeException("$message (temporary=$temporary)")
 class IpBannedException(ip: InetAddress, temporary: Boolean): SuspendedException("IP banned: $ip", temporary)

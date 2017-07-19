@@ -2,6 +2,7 @@ package net.jammos.realmserver.auth
 
 import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.utils.ByteArrays.randomBytes
+import net.jammos.realmserver.utils.types.BigUnsignedInteger
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.Instant
@@ -10,8 +11,9 @@ import java.util.concurrent.ConcurrentHashMap
 interface AuthDao {
     fun createUser(username: Username, password: String): User
     fun getUser(username: Username): User?
-    fun suspendUser(user: User, start: Instant, end: Instant?): User?
-    fun recordUserLogon(user: User, ip: InetAddress, at: Instant, successful: Boolean = true)
+    fun suspendUser(username: Username, start: Instant, end: Instant? = null): User?
+    fun updateUserSessionKey(username: Username, sessionKey: BigUnsignedInteger)
+    fun recordUserAuthFailure(username: Username): Long
 
     // TODO: somewhere else?
     fun suspendIp(ip: InetAddress, end: Instant?)
@@ -22,13 +24,12 @@ interface AuthDao {
 data class IpSuspension(val end: Instant?)
 
 class InMemoryAuthDao(private val cryptoManager: CryptoManager): AuthDao {
-
     val users = ConcurrentHashMap<Username, User>()
     val ipBans = ConcurrentHashMap<InetAddress, IpSuspension>()
 
     override fun createUser(username: Username, password: String): User {
 
-        val salt = randomBytes(32)
+        val salt = SaltByteArray(randomBytes(32))
         val passwordUpper = password.toUpperCase()
 
         val loginHash = cryptoManager.createPrivateKey(
@@ -47,20 +48,21 @@ class InMemoryAuthDao(private val cryptoManager: CryptoManager): AuthDao {
 
     override fun getUser(username: Username): User? = users[username]
 
-    override fun suspendUser(user: User, start: Instant, end: Instant?): User? {
-        return users[user.username]
+    override fun suspendUser(username: Username, start: Instant, end: Instant?): User? {
+        return users[username]
             ?.copy(
                 suspension = UserSuspension(
                     start = start,
                     end = end))
-            ?.let {
-                users[user.username] = it
-                it
-            }
+            ?.apply { users[username] = this }
     }
 
-    override fun recordUserLogon(user: User, ip: InetAddress, at: Instant, successful: Boolean) {
-        // TODO: implement this
+    override fun updateUserSessionKey(username: Username, sessionKey: BigUnsignedInteger) {
+
+    }
+
+    override fun recordUserAuthFailure(username: Username): Long {
+        return 0
     }
 
     override fun suspendIp(ip: InetAddress, end: Instant?) {

@@ -1,6 +1,7 @@
 package net.jammos.realmserver.network.message.server
 
 import com.google.common.base.Preconditions
+import net.jammos.realmserver.auth.SaltByteArray
 import net.jammos.realmserver.network.AuthCommand
 import net.jammos.realmserver.network.AuthResult
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
@@ -24,7 +25,7 @@ data class ServerAuthLogonChallengeResponse(
             val N: BigUnsignedInteger,
 
             val B: BigUnsignedInteger,
-            val s: ByteArray,
+            val s: SaltByteArray,
             val unk3: ByteArray,
             val securityFlags: Int
     ) {
@@ -42,7 +43,7 @@ data class ServerAuthLogonChallengeResponse(
             output.write(N.bytes)
 
             // write s, size 32
-            output.write(s)
+            output.write(s.salt)
 
             // write unk3, size 16
             output.write(unk3)

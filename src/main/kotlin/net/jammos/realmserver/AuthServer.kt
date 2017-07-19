@@ -1,5 +1,6 @@
 package net.jammos.realmserver
 
+import com.lambdaworks.redis.RedisClient
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
@@ -10,7 +11,7 @@ import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
 import io.netty.handler.timeout.ReadTimeoutHandler
 import net.jammos.realmserver.auth.AuthManager
-import net.jammos.realmserver.auth.InMemoryAuthDao
+import net.jammos.realmserver.auth.RedisAuthDao
 import net.jammos.realmserver.auth.Username.Username.username
 import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.network.AuthServerHandler
@@ -25,19 +26,23 @@ class AuthServer {
         private val TIMEOUT = 10
         private val PORT = 3724
 
+        private val redis = RedisClient.create("redis://localhost")
         private val cryptoManager = CryptoManager()
-        private val authDao = InMemoryAuthDao(cryptoManager = cryptoManager)
+        private val authDao = RedisAuthDao(redis, cryptoManager)
         private val realmDao = InMemoryRealmDao()
         private val authManager = AuthManager(cryptoManager, authDao)
 
         init {
             authDao.createUser(username("rikbrown"), "test1234")
+            authDao.createUser(username("banned"), "banned")
+            authDao.createUser(username("suspended"), "suspended")
+
             authDao.suspendUser(
-                    user = authDao.createUser(username("banned"), "banned"),
+                    username = username("banned"),
                     start = now(),
                     end = null)
             authDao.suspendUser(
-                    user = authDao.createUser(username("suspended"), "suspended"),
+                    username = username("suspended"),
                     start = now(),
                     end = now())
         }
