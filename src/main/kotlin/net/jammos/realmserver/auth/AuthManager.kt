@@ -14,14 +14,24 @@ class AuthManager(
         private val cryptoManager: CryptoManager,
         private val authDao: AuthDao) {
 
-    companion object : KLogging()
+    companion object: KLogging()
 
     private val k = cryptoManager.constants.k
     private val g = cryptoManager.constants.g
     private val N = cryptoManager.constants.N
     private val sha1 = cryptoManager.sha1()
 
-    fun getUser(username: Username) = authDao.getUser(username)
+    fun validateUser(username: Username): UserAuth {
+        val userAuth = authDao.getUserAuth(username) ?:
+                // unknown account
+                throw UnknownUserException(username)
+
+        authDao.getUserSuspension(username)
+                ?.let { it.end != null }
+                ?.let { throw UserSuspendedException(username, temporary = it) }
+
+        return userAuth
+    }
 
     /**
      * Starts a logon challenge for [username] from [ip].
@@ -40,24 +50,17 @@ class AuthManager(
                 ?.let { it.end != null }
                 ?.let { throw IpBannedException(ip, temporary = it) }
 
-        // retrieve user
-        val user = authDao.getUser(username) ?:
-                // unknown account
-                throw UnknownUserException(username)
-
-        // banned or suspended?
-        user.suspension
-                ?.let { it.end != null }
-                ?.let { throw UserSuspendedException(username, temporary = it) }
+        // retrieve user and verify not suspended
+        val userAuth = validateUser(username)
 
         // calculate proof
         val b = BigUnsignedInteger.random(19) // secret ephemeral value
-        val v = user.verifier
-        val s = user.salt
+        val v = userAuth.verifier
+        val s = userAuth.salt
         val B = ((k * v) + g.expMod(b, N)) % N // public ephemeral value
 
         return AuthChallenge(
-                user = user,
+                userAuth = userAuth,
                 g = g,
                 N = N,
                 B = B,
@@ -66,13 +69,13 @@ class AuthManager(
     }
 
     /**
-     * Verifies a logon attempt for the given [user] using the provided proof values.
+     * Verifies a logon attempt for the given [userAuth] using the provided proof values.
      *
      * @return If successful, the [M2ByteArray] will be returned.  If unsuccessful, null will
      * be returned.
      */
     fun proofLogon(
-            user: User, // TODO: reload from DAO?
+            userAuth: UserAuth, // TODO: reload from DAO?
             B: BigUnsignedInteger,
             bSecret: BigUnsignedInteger,
             A: BigUnsignedInteger,
@@ -81,23 +84,27 @@ class AuthManager(
         checkArgument(!((A % N).isZero)) { "SRP safeguard abort == 0" }
 
         val u = BigUnsignedInteger(sha1.digest(A.bytes, B.bytes))
-        val S = (A * user.verifier.expMod(u, N)).expMod(bSecret, N)
+        val S = (A * userAuth.verifier.expMod(u, N)).expMod(bSecret, N)
 
         val K = cryptoManager.hashSessionKey(S)
         val M1s = cryptoManager.M1(
-                user.username.toByteArray(UTF_8),
-                user.salt,
+                userAuth.username.toByteArray(UTF_8),
+                userAuth.salt,
                 A,
                 B,
                 K)
 
         // Password match fail :(
         if (M1 != M1s) {
-            logger.info { "Password mismatch for ${user.username}" }
+            logger.info { "Password mismatch for ${userAuth.username}" }
+            authDao.recordUserAuthFailure(userAuth.username) // record the failure
             return null
         }
 
-        // Ok!
+        // Ok! Update session key
+        authDao.updateUserSessionKey(userAuth.username, K)
+
+        // and return M2
         return M2ByteArray(sha1.digest(
                 A.bytes,
                 M1.bytes,
@@ -106,7 +113,7 @@ class AuthManager(
 }
 
 data class AuthChallenge(
-        val user: User,
+        val userAuth: UserAuth,
         val g: BigUnsignedInteger,
         val N: BigUnsignedInteger,
         val B: BigUnsignedInteger,

@@ -21,8 +21,7 @@ class RealmListStep(
         logger.debug { "Handling realm list for apparent user($username)" }
 
         // validate user still exists and is not suspended at this point
-        val user = authManager.getUser(username) ?: rejectArgument("user($username) tried to logon but does not exist")
-        checkArgument(!user.isSuspended) { "user($username) tried to logon but is suspended" }
+        authManager.validateUser(username)
 
         // get realms
         val realms = realmDao.listRealms()

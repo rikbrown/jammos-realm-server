@@ -22,11 +22,11 @@ data class ServerAuthLogonProofResponse(
             val unk2: Int = 0) {
 
         init {
-            Preconditions.checkArgument(M2.m2.size == 20)
+            Preconditions.checkArgument(M2.bytes.size == 20)
         }
 
         fun write(output: DataOutput) {
-            output.write(M2.m2)
+            output.write(M2.bytes)
             output.writeInt(unk2)
         }
     }

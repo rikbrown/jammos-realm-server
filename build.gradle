@@ -56,6 +56,7 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: "$jackson_version"
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jackson_version"
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: "$jackson_version"
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: "$jackson_version"
 
     // Test
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'

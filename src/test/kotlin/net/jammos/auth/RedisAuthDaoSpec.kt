@@ -8,6 +8,7 @@ import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
 import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should equal`
+import org.amshove.kluent.`should not be`
 import org.apache.commons.text.RandomStringGenerator
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given
@@ -40,13 +41,12 @@ object RedisAuthDaoSpec: Spek({
             val username = newUsername()
             val user = authDao.createUser(username, "rank11")
 
-            it("should return a new unsuspended user") {
+            it("should return a new user") {
                 user.username `should equal` username
-                user.suspension `should be` null
             }
 
             it("should create a user entry") {
-                val gotUser = authDao.getUser(username)
+                val gotUser = authDao.getUserAuth(username)
                 gotUser `should equal` user
             }
         }
@@ -56,15 +56,11 @@ object RedisAuthDaoSpec: Spek({
         val username = newUsername()
         beforeGroup { authDao.createUser(username, "rank11") }
 
-        on("getUser") {
-            val user = authDao.getUser(username)!!
+        on("getUserAuth") {
+            val userAuth = authDao.getUserAuth(username)!!
 
-            it("should return the given user") {
-                user.username `should equal` username
-            }
-
-            it("should not return a suspended user") {
-                user.suspension `should be` null
+            it("should return the given user auth") {
+                userAuth.username `should equal` username
             }
         }
 
@@ -97,43 +93,42 @@ object RedisAuthDaoSpec: Spek({
         val username = newUsername()
         beforeGroup { authDao.createUser(username, "rank11") }
 
+        on("suspendUser forever") {
+            authDao.suspendUser(username, start = now)
+
+            it("should suspend the user") {
+                val gotSuspension = authDao.getUserSuspension(username)
+                gotSuspension `should not be` null
+                gotSuspension!!.start `should equal` now
+                gotSuspension.end `should be` null
+            }
+        }
+
         on("suspendUser temporarily") {
-            val suspendedUser = authDao.suspendUser(username, start = now)!!
+            val end = now.plusSeconds(60)
+            authDao.suspendUser(username, start = now, end = end)
 
-            it("should return the user") {
-                suspendedUser.username `should equal` username
+            it("should suspend the user with an end") {
+                val gotSuspension = authDao.getUserSuspension(username)
+                gotSuspension `should not be` null
+                gotSuspension!!.start `should equal` now
+                gotSuspension.end `should equal` end
             }
 
-            it("should return suspended information") {
-                suspendedUser.isSuspended `should equal` true
-                suspendedUser.suspension `should equal` UserSuspension(start = now)
-            }
-
-            it("should still be suspended when retrieved again") {
-                val gotUser = authDao.getUser(username)
-                suspendedUser `should equal` gotUser
-            }
         }
     }
 
     given("unknown user") {
         val username = newUsername()
 
-        on("getUser") {
-            val user = authDao.getUser(username)
+        on("getUserAuth") {
+            val user = authDao.getUserAuth(username)
 
             it("should return nothing") {
                 user `should be` null
             }
         }
 
-        on("suspendUser") {
-            val suspendedUser = authDao.suspendUser(username, Instant.now())
-
-            it("should return nothing") {
-                suspendedUser `should be` null
-            }
-        }
     }
 
 })

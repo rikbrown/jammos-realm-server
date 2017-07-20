@@ -9,9 +9,13 @@ import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 interface AuthDao {
-    fun createUser(username: Username, password: String): User
-    fun getUser(username: Username): User?
-    fun suspendUser(username: Username, start: Instant, end: Instant? = null): User?
+    fun getUserAuth(username: Username): UserAuth?
+    fun getUserSuspension(username: Username): UserSuspension?
+
+    fun createUser(username: Username, password: String): UserAuth
+
+    fun suspendUser(username: Username, start: Instant, end: Instant? = null)
+
     fun updateUserSessionKey(username: Username, sessionKey: BigUnsignedInteger)
     fun recordUserAuthFailure(username: Username): Long
 
@@ -24,10 +28,11 @@ interface AuthDao {
 data class IpSuspension(val end: Instant?)
 
 class InMemoryAuthDao(private val cryptoManager: CryptoManager): AuthDao {
-    val users = ConcurrentHashMap<Username, User>()
+    val users = ConcurrentHashMap<Username, UserAuth>()
+    val suspensions = ConcurrentHashMap<Username, UserSuspension>()
     val ipBans = ConcurrentHashMap<InetAddress, IpSuspension>()
 
-    override fun createUser(username: Username, password: String): User {
+    override fun createUser(username: Username, password: String): UserAuth {
 
         val salt = SaltByteArray(randomBytes(32))
         val passwordUpper = password.toUpperCase()
@@ -37,7 +42,7 @@ class InMemoryAuthDao(private val cryptoManager: CryptoManager): AuthDao {
                 passwordUpper.toByteArray(UTF_8),
                 salt)
 
-        val user = User(
+        val user = UserAuth(
                 username = username,
                 salt = salt,
                 verifier = cryptoManager.createUserVerifier(loginHash))
@@ -46,16 +51,15 @@ class InMemoryAuthDao(private val cryptoManager: CryptoManager): AuthDao {
         return user
     }
 
-    override fun getUser(username: Username): User? = users[username]
+    override fun getUserAuth(username: Username) = users[username]
 
-    override fun suspendUser(username: Username, start: Instant, end: Instant?): User? {
-        return users[username]
-            ?.copy(
-                suspension = UserSuspension(
+    override fun suspendUser(username: Username, start: Instant, end: Instant?) {
+        suspensions[username] = UserSuspension(
                     start = start,
-                    end = end))
-            ?.apply { users[username] = this }
+                    end = end)
     }
+
+    override fun getUserSuspension(username: Username) = suspensions[username]
 
     override fun updateUserSessionKey(username: Username, sessionKey: BigUnsignedInteger) {
 

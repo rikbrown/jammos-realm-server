@@ -28,7 +28,7 @@ class CryptoManager(val constants: CryptoConstants = CryptoConstants()) {
         val name_hash = sha1.digest(name_utf8)
         sha1.update(constants.Ng)
         sha1.update(name_hash)
-        sha1.update(salt.salt)
+        sha1.update(salt.bytes)
         sha1.update(A)
         sha1.update(B)
         sha1.update(K)
@@ -38,7 +38,7 @@ class CryptoManager(val constants: CryptoConstants = CryptoConstants()) {
     fun createPrivateKey(usernameUtf8: ByteArray, passwordUtf8: ByteArray, salt: SaltByteArray): BigUnsignedInteger {
         val sha1 = sha1()
         val tmp = sha1.digest(usernameUtf8, COLON, passwordUtf8)
-        return BigUnsignedInteger(sha1.digest(salt.salt, tmp))
+        return BigUnsignedInteger(sha1.digest(salt.bytes, tmp))
     }
 
     fun createUserVerifier(privateKey: BigUnsignedInteger,

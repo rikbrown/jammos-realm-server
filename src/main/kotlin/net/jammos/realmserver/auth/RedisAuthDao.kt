@@ -1,6 +1,7 @@
 package net.jammos.realmserver.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.common.base.Strings
@@ -22,7 +23,10 @@ class RedisAuthDao(
     private companion object: KLogging() {
         val AUTH_FAILURES_TTL: Duration = Duration.ofMinutes(30)
 
-        val objectMapper = ObjectMapper().registerKotlinModule()
+        val objectMapper: ObjectMapper = ObjectMapper()
+                .registerKotlinModule()
+                .registerModule(JavaTimeModule())
+
         fun json(obj: Any): String = objectMapper.writeValueAsString(obj)
         inline fun <reified T: Any> fromJson(json: String): T = objectMapper.readValue(json)
 
@@ -39,15 +43,32 @@ class RedisAuthDao(
         data class RedisUserSuspension(
                 val start: Instant,
                 val end: Instant?) {
-            val userSuspension get() = UserSuspension(start = start, end = end)
+            fun fromRedis() = UserSuspension(start = start, end = end)
         }
-        fun User.toRedis(): RedisUserAuth = RedisUserAuth(salt = salt.salt, verifier = verifier.bytes)
+        fun UserAuth.toRedis(): RedisUserAuth = RedisUserAuth(salt = salt.bytes, verifier = verifier.bytes)
         fun UserSuspension.toRedis(): RedisUserSuspension = RedisUserSuspension(start = start, end = end)
     }
 
     private val conn = redisClient.connect().sync()
 
-    override fun createUser(username: Username, password: String): User {
+    override fun getUserAuth(username: Username): UserAuth? {
+        return conn.get(userAuthKey(username))
+                ?.let { fromJson<RedisUserAuth>(it) }
+                ?.let { (salt, verifier) ->
+                    UserAuth(
+                            username = username,
+                            salt = SaltByteArray(salt),
+                            verifier = BigUnsignedInteger(verifier))
+                }
+    }
+
+    override fun getUserSuspension(username: Username): UserSuspension? {
+        return conn.get(userSuspensionKey(username))
+                ?.let { fromJson<RedisUserSuspension>(it) }
+                ?.fromRedis()
+    }
+
+    override fun createUser(username: Username, password: String): UserAuth {
         val salt = SaltByteArray(randomBytes(32))
         val passwordUpper = password.toUpperCase()
 
@@ -56,7 +77,7 @@ class RedisAuthDao(
                 passwordUpper.toByteArray(UTF_8),
                 salt)
 
-        val user = User(
+        val user = UserAuth(
                 username = username,
                 salt = salt,
                 verifier = cryptoManager.createUserVerifier(loginHash))
@@ -67,33 +88,10 @@ class RedisAuthDao(
         return user
     }
 
-    override fun getUser(username: Username): User? {
-        return conn.get(userAuthKey(username))
-                ?.let { fromJson<RedisUserAuth>(it) }
-                ?.let { (salt, verifier) ->
-                    val suspension = conn.get(userSuspensionKey(username))
-                                        ?.let { fromJson<RedisUserSuspension>(it) }
-                                        ?.userSuspension
-
-                    User(
-                            username = username,
-                            salt = SaltByteArray(salt),
-                            verifier = BigUnsignedInteger(verifier),
-                            suspension = suspension)
-                }
-    }
-
-    override fun suspendUser(username: Username, start: Instant, end: Instant?): User? {
-        return getUser(username)
-                // update data class with suspension
-                ?.copy(
-                        suspension = UserSuspension(
-                                start = start,
-                                end = end))
-                // save in redis
-                ?.apply {
-                    conn.set(userSuspensionKey(username), json(suspension!!.toRedis()))
-                }
+    override fun suspendUser(username: Username, start: Instant, end: Instant?) {
+        conn.set(userSuspensionKey(username), json(UserSuspension(
+                start = start,
+                end = end).toRedis()))
     }
 
     override fun updateUserSessionKey(username: Username, sessionKey: BigUnsignedInteger) {
@@ -107,7 +105,6 @@ class RedisAuthDao(
                 ?.apply { conn.expire(key, AUTH_FAILURES_TTL.seconds) }
                 ?: 0
     }
-
 
     override fun suspendIp(ip: InetAddress, end: Instant?) {
         val key = ipSuspensionKey(ip)
@@ -123,8 +120,7 @@ class RedisAuthDao(
         return try {
             conn.get(ipSuspensionKey(ip))
                     // empty string means forever
-                    ?.let { Strings.emptyToNull(it) }
-                    ?.let { IpSuspension(Instant.parse(it)) }
+                    ?.let { IpSuspension(Strings.emptyToNull(it) ?.let(Instant::parse)) }
 
         } catch (e: DateTimeParseException) {
             logger.error(e) { "Failed to parse expiry date" }

@@ -4,14 +4,10 @@ import net.jammos.realmserver.utils.types.BigUnsignedInteger
 import java.nio.charset.Charset
 import java.time.Instant
 
-data class User(
+data class UserAuth(
         val username: Username,
         val salt: SaltByteArray,
-        val verifier: BigUnsignedInteger,
-        val suspension: UserSuspension? = null) {
-
-    val isSuspended get() = suspension != null
-}
+        val verifier: BigUnsignedInteger)
 
 data class Username private constructor(val username: String) {
     companion object Username {

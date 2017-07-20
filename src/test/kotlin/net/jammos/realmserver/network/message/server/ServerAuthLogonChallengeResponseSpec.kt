@@ -40,10 +40,6 @@ object ServerAuthLogonChallengeResponseSpec: Spek({
         val s = BigUnsignedInteger.random(32)
         val unk3 = BigUnsignedInteger.random(16)
         val sv = 0
-
-        val response = ServerAuthLogonChallengeResponse(AuthResult.SUCCESS, SuccessData(
-
-        ))
     }
 
 })

@@ -64,7 +64,7 @@ class LogonChallengeStep(
         return ResponseAndNextStep(
                 response = response,
                 nextStep = LogonProofStep(
-                        user = proofDemand.user,
+                        userAuth = proofDemand.userAuth,
                         B = proofDemand.B,
                         bSecret = proofDemand.bSecret,
 

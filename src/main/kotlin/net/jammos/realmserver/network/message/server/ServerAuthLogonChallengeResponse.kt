@@ -43,7 +43,7 @@ data class ServerAuthLogonChallengeResponse(
             output.write(N.bytes)
 
             // write s, size 32
-            output.write(s.salt)
+            output.write(s.bytes)
 
             // write unk3, size 16
             output.write(unk3)
