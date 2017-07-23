@@ -31,14 +31,14 @@ class AuthServerHandler(
 
             // No more actions possible, close connection
             if (nextStep == null) {
-                logger.info("Next step after $step is null, closing connection")
+                logger.info { "Next step after $step is null, closing connection" }
                 // If we don't specify this, it seems like we close too quickly
                 Thread.sleep(500)
                 ctx.close()
                 return
             }
 
-            logger.info("step($step) complete, moving to step($nextStep)")
+            logger.info { "step($step) complete, moving to step($nextStep)" }
             step = nextStep
 
         } finally {

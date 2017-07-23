@@ -25,7 +25,7 @@ class LogonProofStep(
     }
 
     override fun handle0(msg: ClientAuthLogonProofMessage): ResponseAndNextStep<ServerAuthLogonProofResponse> {
-        logger.debug { "Handling logon proof for user(${userAuth.username})" }
+        logger.debug { "Handling logon proof for user ${userAuth.username}" }
 
         val M2 = authManager.proofLogon(
                 userAuth = userAuth,
@@ -45,7 +45,7 @@ class LogonProofStep(
                 successData = ServerAuthLogonProofResponse.SuccessData(M2))
 
         // next step is realm list! :)
-        logger.debug { "Happy with proof for user(${userAuth.username})"}
+        logger.debug { "Happy with proof for user ${userAuth.username}"}
         return ResponseAndNextStep(
                 response = response,
                 nextStep = RealmListStep(

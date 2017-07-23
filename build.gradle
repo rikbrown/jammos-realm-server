@@ -38,6 +38,7 @@ dependencies {
     // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '0.16'
 
     // External
     compile group: 'com.google.guava', name: 'guava', version: '22.0'
@@ -72,5 +73,10 @@ dependencies {
     testRuntime('org.jetbrains.spek:spek-junit-platform-engine:1.1.1') {
         exclude group: 'org.junit.platform'
         exclude group: 'org.jetbrains.kotlin'
+    }
+}
+kotlin {
+    experimental {
+        coroutines "enable"
     }
 }

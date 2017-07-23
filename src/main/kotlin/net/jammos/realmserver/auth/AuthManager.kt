@@ -1,14 +1,20 @@
 package net.jammos.realmserver.auth
 
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.launch
 import mu.KLogging
 import net.jammos.realmserver.auth.crypto.CryptoManager
 import net.jammos.realmserver.utils.checkArgument
 import net.jammos.realmserver.utils.extensions.digest
+import net.jammos.realmserver.utils.extensions.minutes
 import net.jammos.realmserver.utils.types.BigUnsignedInteger
 import net.jammos.realmserver.utils.types.ComparableByteArray
 import org.omg.CORBA.UnknownUserException
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets.UTF_8
+import java.time.Duration
+import java.time.Instant
+import java.time.Instant.now
 
 class AuthManager(
         private val cryptoManager: CryptoManager,
@@ -21,6 +27,12 @@ class AuthManager(
     private val N = cryptoManager.constants.N
     private val sha1 = cryptoManager.sha1()
 
+    /**
+     * Validates [username] ensuring it is a known and not suspended username
+     *
+     * @throws UnknownUserException if the user is not known
+     * @throws UserSuspendedException if the user is suspended or banned
+     */
     fun validateUser(username: Username): UserAuth {
         val userAuth = authDao.getUserAuth(username) ?:
                 // unknown account
@@ -34,10 +46,10 @@ class AuthManager(
     }
 
     /**
-     * Starts a logon challenge for [username] from [ip].
+     * Starts a logon challenge for [username] from [ip].  Will also invoke validation via [validateUser].
      *
      * @return If challenge request is accepted, an [AuthChallenge] will be returned for the client to
-     * respond to
+     * respond to.
      * @throws UnknownUserException if the [username] was not recognised
      * @throws UserSuspendedException if the [username] was suspended/banned
      */
@@ -97,7 +109,7 @@ class AuthManager(
         // Password match fail :(
         if (M1 != M1s) {
             logger.info { "Password mismatch for ${userAuth.username}" }
-            authDao.recordUserAuthFailure(userAuth.username) // record the failure
+            launch(CommonPool) { handleAuthFailure(userAuth.username) } // record the failure and possibly suspend based on it
             return null
         }
 
@@ -109,6 +121,15 @@ class AuthManager(
                 A.bytes,
                 M1.bytes,
                 K.bytes))
+    }
+
+    suspend private fun handleAuthFailure(username: Username) {
+        if (authDao.recordUserAuthFailure(username) > 5) {
+            // User failed auth too many times, we should suspend
+            // TODO: configuration options
+            authDao.suspendUser(username, start = now(), end = now() + 15.minutes)
+        }
+
     }
 }
 
