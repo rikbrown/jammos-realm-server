@@ -1,13 +1,9 @@
 package net.jammos.realmserver.network.message.server
 
-import com.google.common.io.ByteArrayDataOutput
 import com.google.common.io.ByteStreams
 import net.jammos.realmserver.network.AuthCommand
 import net.jammos.realmserver.network.AuthResult
-import net.jammos.realmserver.network.message.server.ServerAuthLogonChallengeResponse.SuccessData
-import net.jammos.realmserver.utils.ByteArrays
-import net.jammos.realmserver.utils.types.BigUnsignedInteger
-import org.amshove.kluent.`should be`
+import net.jammos.utils.types.BigUnsignedInteger
 import org.amshove.kluent.`should equal`
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given

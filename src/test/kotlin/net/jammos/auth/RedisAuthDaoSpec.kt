@@ -2,10 +2,9 @@ package net.jammos.auth
 
 import com.lambdaworks.redis.RedisClient
 import net.jammos.realmserver.auth.RedisAuthDao
-import net.jammos.realmserver.auth.UserSuspension
 import net.jammos.realmserver.auth.Username
 import net.jammos.realmserver.auth.crypto.CryptoManager
-import net.jammos.realmserver.utils.types.BigUnsignedInteger
+import net.jammos.utils.types.BigUnsignedInteger
 import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should equal`
 import org.amshove.kluent.`should not be`

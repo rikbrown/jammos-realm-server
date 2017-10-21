@@ -1,6 +1,6 @@
 package net.jammos.realmserver.realm
 
-import net.jammos.realmserver.utils.types.BigUnsignedInteger
+import net.jammos.utils.types.BigUnsignedInteger
 
 enum class RealmType(val value: BigUnsignedInteger) {
     NORMAL(BigUnsignedInteger(0)),

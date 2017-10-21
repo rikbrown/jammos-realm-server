@@ -1,3 +1,3 @@
 rootProject.name = 'realm-server'
-rootProject.name = 'realm-server'
 
+includeBuild '../utils'

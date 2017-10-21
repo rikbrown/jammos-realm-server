@@ -1,6 +1,6 @@
 package net.jammos.realmserver.network
 
-import net.jammos.realmserver.utils.types.WriteableByte
+import net.jammos.utils.types.WriteableByte
 import java.io.DataInput
 
 /**
@@ -13,13 +13,13 @@ enum class AuthCommand(override val value: Int): WriteableByte {
     LOGON_CHALLENGE(0x00),
 
     /**
-     * Proof in response tp the challenge.
+     * Proof in response to the challenge.
      */
 
     LOGON_PROOF(0x01),
 
     /**
-     * Realm liar
+     * Realm list
      */
     REALM_LIST(0x10);
 

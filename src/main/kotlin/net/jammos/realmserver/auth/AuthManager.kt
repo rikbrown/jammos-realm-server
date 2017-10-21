@@ -4,17 +4,18 @@ import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
 import mu.KLogging
 import net.jammos.realmserver.auth.crypto.CryptoManager
-import net.jammos.realmserver.utils.checkArgument
-import net.jammos.realmserver.utils.extensions.digest
-import net.jammos.realmserver.utils.extensions.minutes
-import net.jammos.realmserver.utils.types.BigUnsignedInteger
-import net.jammos.realmserver.utils.types.ComparableByteArray
+import net.jammos.utils.checkArgument
+import net.jammos.utils.extensions.digest
+import net.jammos.utils.extensions.minutes
+import net.jammos.utils.types.BigUnsignedInteger
+import net.jammos.utils.types.ComparableByteArray
 import org.omg.CORBA.UnknownUserException
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets.UTF_8
-import java.time.Duration
-import java.time.Instant
 import java.time.Instant.now
+
+private val SUSPEND_AFTER_LOGIN_FAILURES = 5
+private val LOGIN_FAILURE_SUSPENSION_DURATION = 5.minutes
 
 class AuthManager(
         private val cryptoManager: CryptoManager,
@@ -109,7 +110,10 @@ class AuthManager(
         // Password match fail :(
         if (M1 != M1s) {
             logger.info { "Password mismatch for ${userAuth.username}" }
-            launch(CommonPool) { handleAuthFailure(userAuth.username) } // record the failure and possibly suspend based on it
+            launch(CommonPool) {
+                handleAuthFailure(userAuth.username)
+            }
+
             return null
         }
 
@@ -123,14 +127,14 @@ class AuthManager(
                 K.bytes))
     }
 
-    suspend private fun handleAuthFailure(username: Username) {
-        if (authDao.recordUserAuthFailure(username) > 5) {
-            // User failed auth too many times, we should suspend
-            // TODO: configuration options
-            authDao.suspendUser(username, start = now(), end = now() + 15.minutes)
+    suspend fun handleAuthFailure(username: Username) {
+        if (authDao.recordUserAuthFailure(username) > SUSPEND_AFTER_LOGIN_FAILURES) {
+            logger.info { "Suspending $username because > 5 authentication failures" }
+            authDao.suspendUser(username, now(), now() + LOGIN_FAILURE_SUSPENSION_DURATION)
         }
 
     }
+
 }
 
 data class AuthChallenge(

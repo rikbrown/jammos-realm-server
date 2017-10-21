@@ -2,8 +2,8 @@ package net.jammos.realmserver.realm
 
 import net.jammos.realmserver.auth.Username
 import net.jammos.realmserver.auth.Username.Username.username
-import net.jammos.realmserver.utils.extensions.get
-import net.jammos.realmserver.utils.types.InternetAddress
+import net.jammos.utils.extensions.get
+import net.jammos.utils.types.InternetAddress
 
 interface RealmDao {
     fun listRealms(): Set<Realm>

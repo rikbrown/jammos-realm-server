@@ -1,9 +1,9 @@
 package net.jammos.realmserver.network.message.client
 
-import net.jammos.realmserver.utils.extensions.readBigUnsigned
-import net.jammos.realmserver.utils.extensions.readBytes
-import net.jammos.realmserver.utils.field
-import net.jammos.realmserver.utils.types.BigUnsignedInteger
+import net.jammos.utils.extensions.readBigUnsigned
+import net.jammos.utils.extensions.readBytes
+import net.jammos.utils.field
+import net.jammos.utils.types.BigUnsignedInteger
 import java.io.DataInput
 
 data class ClientAuthLogonProofMessage(

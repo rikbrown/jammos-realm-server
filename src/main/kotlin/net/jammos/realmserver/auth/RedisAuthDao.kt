@@ -8,8 +8,9 @@ import com.google.common.base.Strings
 import com.lambdaworks.redis.RedisClient
 import mu.KLogging
 import net.jammos.realmserver.auth.crypto.CryptoManager
-import net.jammos.realmserver.utils.ByteArrays.randomBytes
-import net.jammos.realmserver.utils.types.BigUnsignedInteger
+import net.jammos.utils.ByteArrays.randomBytes
+import net.jammos.utils.extensions.minutes
+import net.jammos.utils.types.BigUnsignedInteger
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.Duration
@@ -21,7 +22,7 @@ class RedisAuthDao(
         private val cryptoManager: CryptoManager) : AuthDao {
 
     private companion object: KLogging() {
-        val AUTH_FAILURES_TTL: Duration = Duration.ofMinutes(30)
+        val AUTH_FAILURES_TTL: Duration = 30.minutes
 
         val objectMapper: ObjectMapper = ObjectMapper()
                 .registerKotlinModule()

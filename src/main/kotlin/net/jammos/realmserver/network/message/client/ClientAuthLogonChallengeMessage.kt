@@ -1,9 +1,9 @@
 package net.jammos.realmserver.network.message.client
 
-import net.jammos.realmserver.utils.extensions.readChars
-import net.jammos.realmserver.utils.extensions.readIpAddress
-import net.jammos.realmserver.utils.extensions.readUnsignedInt
-import net.jammos.realmserver.utils.field
+import net.jammos.utils.extensions.readChars
+import net.jammos.utils.extensions.readIpAddress
+import net.jammos.utils.extensions.readUnsignedInt
+import net.jammos.utils.field
 import java.io.DataInput
 import java.net.InetAddress
 

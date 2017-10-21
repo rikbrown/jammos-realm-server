@@ -1,9 +1,9 @@
 package net.jammos.realmserver.auth.crypto
 
 import net.jammos.realmserver.auth.SaltByteArray
-import net.jammos.realmserver.utils.extensions.digest
-import net.jammos.realmserver.utils.extensions.update
-import net.jammos.realmserver.utils.types.BigUnsignedInteger
+import net.jammos.utils.extensions.digest
+import net.jammos.utils.extensions.update
+import net.jammos.utils.types.BigUnsignedInteger
 import java.security.MessageDigest
 
 private val COLON = ":".toByteArray(Charsets.UTF_8)

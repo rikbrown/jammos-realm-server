@@ -1,6 +1,6 @@
 package net.jammos.realmserver.auth
 
-import net.jammos.realmserver.utils.types.BigUnsignedInteger
+import net.jammos.utils.types.BigUnsignedInteger
 import java.nio.charset.Charset
 import java.time.Instant
 

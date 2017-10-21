@@ -1,9 +1,9 @@
-group 'com.jammos'
+group 'net.jammos'
 version '0.1-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1.3'
-    ext.jackson_version = '2.8.9'
+    ext.kotlin_version = '1.1.51'
+    ext.jackson_version = '2.9.2'
 
     repositories {
         mavenCentral()
@@ -35,18 +35,15 @@ repositories {
 }
 
 dependencies {
+    // Internal
+    compile 'net.jammos:shared-utils:1.0-SNAPSHOT'
+
     // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     compile group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '0.16'
 
     // External
-    compile group: 'com.google.guava', name: 'guava', version: '22.0'
-    compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
-    compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
-
-
     compile group: 'io.github.microutils', name: 'kotlin-logging', version: '1.4.5'
     compile group: 'io.netty', name: 'netty-all', version: '4.1.9.Final'
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
@@ -80,3 +77,12 @@ kotlin {
         coroutines "enable"
     }
 }
+
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+

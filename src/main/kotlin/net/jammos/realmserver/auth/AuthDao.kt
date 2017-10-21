@@ -1,8 +1,8 @@
 package net.jammos.realmserver.auth
 
 import net.jammos.realmserver.auth.crypto.CryptoManager
-import net.jammos.realmserver.utils.ByteArrays.randomBytes
-import net.jammos.realmserver.utils.types.BigUnsignedInteger
+import net.jammos.utils.ByteArrays.randomBytes
+import net.jammos.utils.types.BigUnsignedInteger
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.Instant

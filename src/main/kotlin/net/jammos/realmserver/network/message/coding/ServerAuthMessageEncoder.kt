@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
 import mu.KLogging
 import net.jammos.realmserver.network.message.server.ServerAuthMessage
-import net.jammos.realmserver.utils.extensions.asDataOutput
+import net.jammos.utils.extensions.asDataOutput
 
 class ServerAuthMessageEncoder : MessageToByteEncoder<ServerAuthMessage>() {
     companion object : KLogging()

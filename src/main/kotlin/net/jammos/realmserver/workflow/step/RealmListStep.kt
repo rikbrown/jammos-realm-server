@@ -1,4 +1,4 @@
-package net.jammos.realmserver.network.step
+package net.jammos.realmserver.workflow.step
 
 import mu.KLogging
 import net.jammos.realmserver.auth.AuthManager
@@ -6,8 +6,7 @@ import net.jammos.realmserver.auth.Username
 import net.jammos.realmserver.network.message.client.ClientRealmListMessage
 import net.jammos.realmserver.network.message.server.ServerRealmListResponse
 import net.jammos.realmserver.realm.RealmDao
-import net.jammos.realmserver.utils.checkArgument
-import net.jammos.realmserver.utils.rejectArgument
+import net.jammos.utils.workflow.Step
 
 class RealmListStep(
         val username: Username,
