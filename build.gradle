@@ -3,7 +3,6 @@ version '0.1-SNAPSHOT'
 
 buildscript {
     ext.kotlin_version = '1.1.51'
-    ext.jackson_version = '2.9.2'
 
     repositories {
         mavenCentral()
@@ -47,14 +46,7 @@ dependencies {
     compile group: 'io.github.microutils', name: 'kotlin-logging', version: '1.4.5'
     compile group: 'io.netty', name: 'netty-all', version: '4.1.9.Final'
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
-    compile group: 'biz.paluch.redis', name: 'lettuce', version: '4.3.2.Final'
     compile group: 'com.github.vjames19', name: 'kotlin-futures', version: '0.1.0'
-
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: "$jackson_version"
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: "$jackson_version"
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jackson_version"
-    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: "$jackson_version"
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: "$jackson_version"
 
     // Test
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'

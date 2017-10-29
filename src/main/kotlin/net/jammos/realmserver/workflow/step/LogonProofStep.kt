@@ -2,11 +2,11 @@ package net.jammos.realmserver.workflow.step
 
 import mu.KLogging
 import net.jammos.realmserver.auth.AuthManager
-import net.jammos.realmserver.auth.UserAuth
 import net.jammos.realmserver.network.AuthResult
 import net.jammos.realmserver.network.message.client.ClientAuthLogonProofMessage
 import net.jammos.realmserver.network.message.server.ServerAuthLogonProofResponse
 import net.jammos.realmserver.realm.RealmDao
+import net.jammos.utils.auth.UserAuth
 import net.jammos.utils.types.BigUnsignedInteger
 import net.jammos.utils.workflow.Step
 

@@ -4,13 +4,13 @@ import mu.KLogging
 import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.auth.SuspendedException
 import net.jammos.realmserver.auth.UnknownUserException
-import net.jammos.realmserver.auth.Username.Username.username
 import net.jammos.realmserver.network.AuthResult
 import net.jammos.realmserver.network.message.client.ClientAuthLogonChallengeMessage
 import net.jammos.realmserver.network.message.server.ServerAuthLogonChallengeResponse
 import net.jammos.realmserver.network.message.server.ServerAuthLogonChallengeResponse.SuccessData
 import net.jammos.realmserver.realm.RealmDao
 import net.jammos.utils.ByteArrays
+import net.jammos.utils.auth.Username.Username.username
 import net.jammos.utils.workflow.Step
 
 class LogonChallengeStep(

@@ -1,9 +1,11 @@
 package net.jammos.realmserver.auth
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.launch
 import mu.KLogging
-import net.jammos.realmserver.auth.crypto.CryptoManager
+import net.jammos.utils.auth.SaltByteArray
+import net.jammos.utils.auth.UserAuth
+import net.jammos.utils.auth.Username
+import net.jammos.utils.auth.crypto.CryptoManager
+import net.jammos.utils.auth.dao.AuthDao
 import net.jammos.utils.checkArgument
 import net.jammos.utils.extensions.digest
 import net.jammos.utils.extensions.minutes
@@ -11,10 +13,9 @@ import net.jammos.utils.types.BigUnsignedInteger
 import net.jammos.utils.types.ComparableByteArray
 import org.omg.CORBA.UnknownUserException
 import java.net.InetAddress
-import java.nio.charset.StandardCharsets.UTF_8
 import java.time.Instant.now
 
-private val SUSPEND_AFTER_LOGIN_FAILURES = 5
+private const val SUSPEND_AFTER_LOGIN_FAILURES = 5
 private val LOGIN_FAILURE_SUSPENSION_DURATION = 5.minutes
 
 class AuthManager(
@@ -101,7 +102,7 @@ class AuthManager(
 
         val K = cryptoManager.hashSessionKey(S)
         val M1s = cryptoManager.M1(
-                userAuth.username.toByteArray(UTF_8),
+                userAuth.username.bytes,
                 userAuth.salt,
                 A,
                 B,
@@ -110,9 +111,7 @@ class AuthManager(
         // Password match fail :(
         if (M1 != M1s) {
             logger.info { "Password mismatch for ${userAuth.username}" }
-            launch(CommonPool) {
-                handleAuthFailure(userAuth.username)
-            }
+            handleAuthFailure(userAuth.username)
 
             return null
         }
@@ -127,7 +126,7 @@ class AuthManager(
                 K.bytes))
     }
 
-    suspend fun handleAuthFailure(username: Username) {
+    private fun handleAuthFailure(username: Username) {
         if (authDao.recordUserAuthFailure(username) > SUSPEND_AFTER_LOGIN_FAILURES) {
             logger.info { "Suspending $username because > 5 authentication failures" }
             authDao.suspendUser(username, now(), now() + LOGIN_FAILURE_SUSPENSION_DURATION)
@@ -147,7 +146,6 @@ data class AuthChallenge(
 )
 
 class M2ByteArray(bytes: ByteArray): ComparableByteArray(bytes)
-class SaltByteArray(bytes: ByteArray): ComparableByteArray(bytes)
 
 sealed class SuspendedException(message: String, val temporary: Boolean): RuntimeException("$message (temporary=$temporary)")
 class IpBannedException(ip: InetAddress, temporary: Boolean): SuspendedException("IP banned: $ip", temporary)

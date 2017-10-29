@@ -1,9 +1,9 @@
 package net.jammos.realmserver.network.message.server
 
 import com.google.common.base.Preconditions
-import net.jammos.realmserver.auth.SaltByteArray
 import net.jammos.realmserver.network.AuthCommand
 import net.jammos.realmserver.network.AuthResult
+import net.jammos.utils.auth.SaltByteArray
 import net.jammos.utils.types.BigUnsignedInteger
 import java.io.DataOutput
 

@@ -2,7 +2,7 @@ package net.jammos.realmserver.workflow.step
 
 import mu.KLogging
 import net.jammos.realmserver.auth.AuthManager
-import net.jammos.realmserver.auth.Username
+import net.jammos.utils.auth.Username
 import net.jammos.realmserver.network.message.client.ClientRealmListMessage
 import net.jammos.realmserver.network.message.server.ServerRealmListResponse
 import net.jammos.realmserver.realm.RealmDao
