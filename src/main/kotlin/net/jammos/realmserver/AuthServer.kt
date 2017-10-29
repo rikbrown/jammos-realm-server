@@ -14,10 +14,11 @@ import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.network.AuthServerHandler
 import net.jammos.realmserver.network.message.coding.ClientAuthMessageDecoder
 import net.jammos.realmserver.network.message.coding.ServerAuthMessageEncoder
-import net.jammos.realmserver.realm.InMemoryRealmDao
+import net.jammos.realmserver.realm.*
 import net.jammos.utils.auth.Username.Username.username
 import net.jammos.utils.auth.crypto.CryptoManager
 import net.jammos.utils.auth.dao.RedisAuthDao
+import net.jammos.utils.types.InternetAddress
 import java.net.InetAddress
 import java.time.Instant.now
 
@@ -29,7 +30,7 @@ class AuthServer {
         private val redis = RedisClient.create("redis://localhost")
         private val cryptoManager = CryptoManager()
         private val authDao = RedisAuthDao(redis, cryptoManager)
-        private val realmDao = InMemoryRealmDao()
+        private val realmDao = RedisRealmDao(redis)
         private val authManager = AuthManager(cryptoManager, authDao)
 
         init {
@@ -45,6 +46,27 @@ class AuthServer {
                     username = username("suspended"),
                     start = now(),
                     end = now())
+
+            realmDao.updateRealm(Realm(
+                    id = RealmId("test1"),
+                    name = "Rank 11 Druids Only",
+                    address = InternetAddress("127.0.0.1", 1234),
+                    realmType = RealmType.PVP))
+            realmDao.updateRealm(Realm(
+                    id = RealmId("test2"),
+                    name = "Synergy (Golden Gods)",
+                    address = InternetAddress("127.0.0.1", 1234),
+                    realmType = RealmType.RPPVP))
+            realmDao.updateRealm(Realm(
+                    id = RealmId("test3"),
+                    name = "Joe plz come here",
+                    address = InternetAddress("127.0.0.1", 1234),
+                    realmFlags = setOf(RealmFlag.REALM_FLAG_NEW_PLAYERS)))
+            realmDao.updateRealm(Realm(
+                    id = RealmId("test4"),
+                    name = "RIP Feenix",
+                    address = InternetAddress("127.0.0.1", 1234),
+                    realmFlags = setOf(RealmFlag.REALM_FLAG_OFFLINE)))
         }
 
         @JvmStatic fun main(args: Array<String>) {

@@ -13,7 +13,7 @@ interface ClientAuthMessage {
 
         fun read(input: DataInput): ClientAuthMessage {
             // Read auth command
-            val authCommand = AuthCommand.read(input) ?: throw IllegalArgumentException("Unknown command")
+            val authCommand = AuthCommand.read(input)
             logger.debug { "Read authCommand($authCommand)"}
 
             val handler = lookup[authCommand] ?: throw IllegalArgumentException("Unsupported command")

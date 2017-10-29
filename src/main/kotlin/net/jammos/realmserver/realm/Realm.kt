@@ -21,4 +21,6 @@ data class RealmId(val realmId: String) {
             return RealmId(UUID.randomUUID().toString())
         }
     }
+
+    override fun toString() = realmId
 }

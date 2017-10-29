@@ -25,7 +25,7 @@ class RealmListStep(
         // get realms
         val realms = realmDao.listRealms()
         val realmCount = realms
-                .map { realm -> realm to realmDao.getCharacterCount(realm.id, username) }
+                .map { realm -> realm to realmDao.getUserCharacterCount(realm.id, username) }
                 .toMap()
 
         // respond

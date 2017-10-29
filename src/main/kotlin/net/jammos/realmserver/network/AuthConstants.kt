@@ -1,5 +1,6 @@
 package net.jammos.realmserver.network
 
+import net.jammos.utils.extensions.toHexString
 import net.jammos.utils.types.WriteableByte
 import java.io.DataInput
 
@@ -23,15 +24,21 @@ enum class AuthCommand(override val value: Int): WriteableByte {
      */
     REALM_LIST(0x10);
 
+    override fun toString() = "${super.toString()} (${value.toHexString(3)})"
+
     companion object {
         /**
          * Read an unsigned byte from the input and convert it to a [AuthCommand]
          */
-        fun read(input: DataInput): AuthCommand? {
+        fun read(input: DataInput): AuthCommand {
             val int = input.readUnsignedByte()
             return values().find { v -> v.value == int }
+                    ?: throw IllegalCommandException(int)
         }
     }
+
+    class IllegalCommandException(cmd: Int): IllegalArgumentException("Illegal command: $cmd (${cmd.toHexString(3)})")
+
 }
 
 enum class AuthResult(override val value: Int): WriteableByte {
