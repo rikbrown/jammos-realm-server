@@ -34,16 +34,16 @@ class AuthServer {
         private val authManager = AuthManager(cryptoManager, authDao)
 
         init {
-            authDao.createUser(username("rikbrown"), "test1234")
-            authDao.createUser(username("banned"), "banned")
-            authDao.createUser(username("suspended"), "suspended")
+            val rikUser = authDao.createUser(username("rik"), "1234")
+            val bannedUser = authDao.createUser(username("banned"), "banned")
+            val suspendedUser = authDao.createUser(username("suspended"), "suspended")
 
             authDao.suspendUser(
-                    username = username("banned"),
+                    userId = bannedUser.userId,
                     start = now(),
                     end = null)
             authDao.suspendUser(
-                    username = username("suspended"),
+                    userId = suspendedUser.userId,
                     start = now(),
                     end = now())
 

@@ -3,6 +3,7 @@ package net.jammos.realmserver.auth
 import mu.KLogging
 import net.jammos.utils.auth.SaltByteArray
 import net.jammos.utils.auth.UserAuth
+import net.jammos.utils.auth.UserId
 import net.jammos.utils.auth.Username
 import net.jammos.utils.auth.crypto.CryptoManager
 import net.jammos.utils.auth.dao.AuthDao
@@ -40,7 +41,7 @@ class AuthManager(
                 // unknown account
                 throw UnknownUserException(username)
 
-        authDao.getUserSuspension(username)
+        authDao.getUserSuspension(userAuth.userId)
                 ?.let { it.end != null }
                 ?.let { throw UserSuspendedException(username, temporary = it) }
 
@@ -111,13 +112,13 @@ class AuthManager(
         // Password match fail :(
         if (M1 != M1s) {
             logger.info { "Password mismatch for ${userAuth.username}" }
-            handleAuthFailure(userAuth.username)
+            handleAuthFailure(userAuth.userId)
 
             return null
         }
 
         // Ok! Update session key
-        authDao.updateUserSessionKey(userAuth.username, K)
+        authDao.updateUserSessionKey(userAuth.userId, K)
 
         // and return M2
         return M2ByteArray(sha1.digest(
@@ -126,10 +127,10 @@ class AuthManager(
                 K.bytes))
     }
 
-    private fun handleAuthFailure(username: Username) {
-        if (authDao.recordUserAuthFailure(username) > SUSPEND_AFTER_LOGIN_FAILURES) {
-            logger.info { "Suspending $username because > 5 authentication failures" }
-            authDao.suspendUser(username, now(), now() + LOGIN_FAILURE_SUSPENSION_DURATION)
+    private fun handleAuthFailure(userId: UserId) {
+        if (authDao.recordUserAuthFailure(userId) > SUSPEND_AFTER_LOGIN_FAILURES) {
+            logger.info { "Suspending $userId because > 5 authentication failures" }
+            authDao.suspendUser(userId, now(), now() + LOGIN_FAILURE_SUSPENSION_DURATION)
         }
 
     }
