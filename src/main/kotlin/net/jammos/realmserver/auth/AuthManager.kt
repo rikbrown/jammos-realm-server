@@ -1,6 +1,7 @@
 package net.jammos.realmserver.auth
 
 import mu.KLogging
+import net.jammos.utils.ByteArrays
 import net.jammos.utils.auth.SaltByteArray
 import net.jammos.utils.auth.UserAuth
 import net.jammos.utils.auth.UserId
@@ -130,7 +131,27 @@ class AuthManager(
                 K.bytes))
     }
 
-    fun getSessionKey(userId: UserId): BigUnsignedInteger? = authDao.getUserSessionKey(userId)
+    fun challengeReconnect(username: Username): ReconnectChallenge {
+        val sessionKey = authDao.getUserAuth(username)
+                ?.let { authDao.getUserSessionKey(it.userId) }
+                ?: throw UnknownUserException(username)
+
+        return ReconnectChallenge(
+                username = username,
+                sessionKey = sessionKey,
+                reconnectProof = ByteArrays.randomBytes(16))
+    }
+
+    fun proofReconnect(challenge: ReconnectChallenge, R1: BigUnsignedInteger, R2: BigUnsignedInteger): UserId? {
+        val sha = sha1.digest(
+                challenge.username.bytes,
+                R1.bytes,
+                challenge.reconnectProof,
+                challenge.sessionKey.bytes)
+
+        return if (sha contentEquals R2.bytes) authDao.getUserAuth(challenge.username)?.userId
+        else null
+    }
 
     private fun handleAuthFailure(userId: UserId) {
         if (authDao.recordUserAuthFailure(userId) > SUSPEND_AFTER_LOGIN_FAILURES) {
@@ -150,6 +171,11 @@ data class AuthChallenge(
         val s: SaltByteArray,
         val bSecret: BigUnsignedInteger
 )
+
+data class ReconnectChallenge(
+        val username: Username,
+        val sessionKey: BigUnsignedInteger,
+        val reconnectProof: ByteArray)
 
 class M2ByteArray(bytes: ByteArray): ComparableByteArray(bytes)
 

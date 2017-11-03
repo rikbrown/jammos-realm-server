@@ -12,7 +12,8 @@ interface ClientAuthMessage {
                 AuthCommand.LOGON_PROOF to ClientAuthLogonProofMessage,
                 AuthCommand.REALM_LIST to ClientRealmListMessage,
 
-                AuthCommand.RECONNECT_CHALLENGE to ClientAuthLogonChallengeMessage.Reader(isReconnect = true)))
+                AuthCommand.RECONNECT_CHALLENGE to ClientAuthLogonChallengeMessage.Reader(isReconnect = true),
+                AuthCommand.RECONNECT_PROOF to ClientReconnectProofMessage))
 
         fun read(input: ByteBuf): ClientAuthMessage {
             // Read auth command
