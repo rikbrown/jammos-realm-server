@@ -26,7 +26,7 @@ class LogonChallengeStep(
     override fun handle0(msg: ClientAuthLogonChallengeMessage): ResponseAndNextStep<ServerAuthLogonChallengeResponse> {
         // get identity
         val I = msg.srpIdentity
-        val username = username(I)
+        val username = username(I.toString())
 
         logger.debug { "Handling logon challenge for username($username)" }
 

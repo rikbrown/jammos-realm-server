@@ -1,49 +1,47 @@
 package net.jammos.realmserver.network.message.client
 
-import net.jammos.utils.extensions.readChars
+import io.netty.buffer.ByteBuf
+import net.jammos.utils.extensions.readCharSequence
 import net.jammos.utils.extensions.readIpAddress
-import net.jammos.utils.extensions.readUnsignedInt
 import net.jammos.utils.field
-import java.io.DataInput
 import java.net.InetAddress
 
 data class ClientAuthLogonChallengeMessage(
-        val gameName: String,
-        val version1: Int,
-        val version2: Int,
-        val version3: Int,
+        val gameName: CharSequence,
+        val version1: Short,
+        val version2: Short,
+        val version3: Short,
         val build: Int,
-        val platform: String,
-        val os: String,
-        val country: String,
-        val timezoneBias: Int,
+        val platform: CharSequence,
+        val os: CharSequence,
+        val country: CharSequence,
+        val timezoneBias: Long,
         val ip: InetAddress,
-        val srpIdentity: String
+        val srpIdentity: CharSequence
 
 ): ClientAuthMessage {
 
     companion object : ClientAuthMessage.Reader {
-        override fun readBody(input: DataInput): ClientAuthLogonChallengeMessage {
+        override fun readBody(input: ByteBuf): ClientAuthLogonChallengeMessage {
             field("error") { input.readByte() }
             field("packetSize") { input.readUnsignedShort() }
 
             return with(input) {
                 // @formatter:off
                 ClientAuthLogonChallengeMessage(
-                        gameName     = field("gameName")     { readChars(4, reverse = false) },
+                        gameName     = field("gameName")     { readCharSequence(4) },
                         version1     = field("version1")     { readUnsignedByte() },
                         version2     = field("version2")     { readUnsignedByte() },
                         version3     = field("version3")     { readUnsignedByte() },
                         build        = field("build")        { readUnsignedShort() },
-                        platform     = field("platform")     { readChars(4) },
-                        os           = field("os")           { readChars(4) },
-                        country      = field("country")      { readChars(4) },
+                        platform     = field("platform")     { readCharSequence(4) },
+                        os           = field("os")           { readCharSequence(4) },
+                        country      = field("country")      { readCharSequence(4) },
                         timezoneBias = field("timezoneBias") { readUnsignedInt() },
                         ip           = field("ip")           { readIpAddress() },
 
                         srpIdentity  = field("srpIdentity")  {
-                            readChars(field("srpIdentityLength") { readUnsignedByte() },
-                            reverse = false) }
+                            readCharSequence(field("srpIdentityLength") { readUnsignedByte().toInt() }) }
                 )
                 // @formatter:on
             }

@@ -1,8 +1,9 @@
 package net.jammos.realmserver.network
 
+import io.netty.buffer.ByteBuf
 import net.jammos.utils.extensions.toHexString
+import net.jammos.utils.types.ReversibleByte
 import net.jammos.utils.types.WriteableByte
-import java.io.DataInput
 
 /**
  * Network authentication commands
@@ -16,7 +17,6 @@ enum class AuthCommand(override val value: Int): WriteableByte {
     /**
      * Proof in response to the challenge.
      */
-
     LOGON_PROOF(0x01),
 
     /**
@@ -26,19 +26,17 @@ enum class AuthCommand(override val value: Int): WriteableByte {
 
     override fun toString() = "${super.toString()} (${value.toHexString(3)})"
 
-    companion object {
+    companion object: ReversibleByte<AuthCommand>(values()) {
         /**
          * Read an unsigned byte from the input and convert it to a [AuthCommand]
          */
-        fun read(input: DataInput): AuthCommand {
-            val int = input.readUnsignedByte()
-            return values().find { v -> v.value == int }
-                    ?: throw IllegalCommandException(int)
+        fun read(input: ByteBuf): AuthCommand {
+            val int = input.readUnsignedByte().toInt()
+            return ofValueOrNull(int) ?: throw IllegalCommandException(int)
         }
     }
 
     class IllegalCommandException(cmd: Int): IllegalArgumentException("Illegal command: $cmd (${cmd.toHexString(3)})")
-
 }
 
 enum class AuthResult(override val value: Int): WriteableByte {

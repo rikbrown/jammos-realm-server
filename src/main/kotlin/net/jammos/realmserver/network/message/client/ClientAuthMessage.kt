@@ -1,8 +1,8 @@
 package net.jammos.realmserver.network.message.client
 
+import io.netty.buffer.ByteBuf
 import mu.KLogging
 import net.jammos.realmserver.network.AuthCommand
-import java.io.DataInput
 
 interface ClientAuthMessage {
     companion object: KLogging() {
@@ -11,7 +11,7 @@ interface ClientAuthMessage {
                 AuthCommand.LOGON_PROOF to ClientAuthLogonProofMessage.Companion,
                 AuthCommand.REALM_LIST to ClientRealmListMessage.Companion)
 
-        fun read(input: DataInput): ClientAuthMessage {
+        fun read(input: ByteBuf): ClientAuthMessage {
             // Read auth command
             val authCommand = AuthCommand.read(input)
             logger.debug { "Read authCommand($authCommand)"}
@@ -29,7 +29,7 @@ interface ClientAuthMessage {
     }
 
     interface Reader {
-        fun readBody(input: DataInput): ClientAuthMessage
+        fun readBody(input: ByteBuf): ClientAuthMessage
     }
 
 }

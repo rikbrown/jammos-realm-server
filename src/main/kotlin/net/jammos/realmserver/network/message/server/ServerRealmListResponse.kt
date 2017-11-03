@@ -1,9 +1,11 @@
 package net.jammos.realmserver.network.message.server
 
+import io.netty.buffer.ByteBuf
 import mu.KLogging
 import net.jammos.realmserver.network.AuthCommand
 import net.jammos.realmserver.realm.Realm
 import net.jammos.realmserver.realm.RealmFlag
+import net.jammos.utils.extensions.writeByte
 import java.io.ByteArrayOutputStream
 import java.io.DataOutput
 import java.io.DataOutputStream
@@ -14,7 +16,7 @@ data class ServerRealmListResponse(
 
     companion object : KLogging()
 
-    override fun write(output: DataOutput) {
+    override fun write(output: ByteBuf) {
         logger.debug("Writing realm list message")
 
         // create realm buffer
@@ -31,17 +33,17 @@ data class ServerRealmListResponse(
         // ---
 
         // begin actual writing
-        AuthCommand.REALM_LIST.write(output) // command
+        output.writeByte(AuthCommand.REALM_LIST)
 
         // realm buffer size (force little endian)
         val realmBufferSize: ByteArray = byteArrayOf(
             (baos.size() and 0xff).toByte(),
             (baos.size() shr 8 and 0xff).toByte())
 
-        output.write(realmBufferSize)
+        output.writeBytes(realmBufferSize)
 
         // realm buffer
-        output.write(baos.toByteArray()) // and buffer
+        output.writeBytes(baos.toByteArray()) // and buffer
 
         logger.debug("Done writing realm list message")
     }

@@ -12,7 +12,7 @@ class ClientAuthMessageDecoder: ByteToMessageDecoder() {
 
     override fun decode(ctx: ChannelHandlerContext, buf: ByteBuf, out: MutableList<Any>) {
         try {
-            val message = ClientAuthMessage.read(buf.asDataInput())
+            val message = ClientAuthMessage.read(buf)
             logger.debug { "Read message: $message" }
             out.add(message)
 
