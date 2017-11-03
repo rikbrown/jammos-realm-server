@@ -2,7 +2,7 @@ package net.jammos.realmserver.network.message.server
 
 import com.google.common.io.ByteStreams
 import net.jammos.realmserver.network.AuthCommand
-import net.jammos.realmserver.network.AuthResult
+import net.jammos.realmserver.network.AuthStatus
 import net.jammos.utils.types.BigUnsignedInteger
 import org.amshove.kluent.`should equal`
 import org.jetbrains.spek.api.Spek
@@ -12,7 +12,7 @@ import org.jetbrains.spek.api.dsl.on
 
 object ServerAuthLogonChallengeResponseSpec: Spek({
     given("a failed response") {
-        val result = AuthResult.BANNED
+        val result = AuthStatus.BANNED
         val response = ServerAuthLogonChallengeResponse(result)
 
         on("write") {

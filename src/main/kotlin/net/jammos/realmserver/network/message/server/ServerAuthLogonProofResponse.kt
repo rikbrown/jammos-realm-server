@@ -4,11 +4,11 @@ import com.google.common.base.Preconditions
 import io.netty.buffer.ByteBuf
 import net.jammos.realmserver.auth.M2ByteArray
 import net.jammos.realmserver.network.AuthCommand
-import net.jammos.realmserver.network.AuthResult
+import net.jammos.realmserver.network.AuthStatus
 import net.jammos.utils.extensions.writeByte
 
 data class ServerAuthLogonProofResponse(
-        val status: AuthResult,
+        val status: AuthStatus,
         val successData: SuccessData? = null
 ): ServerAuthMessage {
 

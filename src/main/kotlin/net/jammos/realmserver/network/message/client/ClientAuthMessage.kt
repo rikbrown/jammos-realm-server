@@ -1,15 +1,18 @@
 package net.jammos.realmserver.network.message.client
 
+import com.google.common.collect.Maps.immutableEnumMap
 import io.netty.buffer.ByteBuf
 import mu.KLogging
 import net.jammos.realmserver.network.AuthCommand
 
 interface ClientAuthMessage {
     companion object: KLogging() {
-        private val lookup = mapOf(
-                AuthCommand.LOGON_CHALLENGE to ClientAuthLogonChallengeMessage.Companion,
-                AuthCommand.LOGON_PROOF to ClientAuthLogonProofMessage.Companion,
-                AuthCommand.REALM_LIST to ClientRealmListMessage.Companion)
+        private val lookup = immutableEnumMap(mapOf(
+                AuthCommand.LOGON_CHALLENGE to ClientAuthLogonChallengeMessage.Reader(isReconnect = false),
+                AuthCommand.LOGON_PROOF to ClientAuthLogonProofMessage,
+                AuthCommand.REALM_LIST to ClientRealmListMessage,
+
+                AuthCommand.RECONNECT_CHALLENGE to ClientAuthLogonChallengeMessage.Reader(isReconnect = true)))
 
         fun read(input: ByteBuf): ClientAuthMessage {
             // Read auth command

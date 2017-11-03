@@ -36,14 +36,17 @@ class AuthManager(
      * @throws UnknownUserException if the user is not known
      * @throws UserSuspendedException if the user is suspended or banned
      */
-    fun validateUser(username: Username): UserAuth {
-        val userAuth = authDao.getUserAuth(username) ?:
-                // unknown account
-                throw UnknownUserException(username)
+    fun validateUser(userId: UserId): UserAuth {
+        val username = authDao.getUserUsername(userId) ?: throw UnknownUserException(userId)
+        return validateUser(username)
+    }
+
+    private fun validateUser(username: Username): UserAuth {
+        val userAuth = authDao.getUserAuth(username) ?: throw UnknownUserException(username)
 
         authDao.getUserSuspension(userAuth.userId)
                 ?.let { it.end != null }
-                ?.let { throw UserSuspendedException(username, temporary = it) }
+                ?.let { throw UserSuspendedException(userAuth.userId, temporary = it) }
 
         return userAuth
     }
@@ -127,6 +130,8 @@ class AuthManager(
                 K.bytes))
     }
 
+    fun getSessionKey(userId: UserId): BigUnsignedInteger? = authDao.getUserSessionKey(userId)
+
     private fun handleAuthFailure(userId: UserId) {
         if (authDao.recordUserAuthFailure(userId) > SUSPEND_AFTER_LOGIN_FAILURES) {
             logger.info { "Suspending $userId because > 5 authentication failures" }
@@ -150,6 +155,5 @@ class M2ByteArray(bytes: ByteArray): ComparableByteArray(bytes)
 
 sealed class SuspendedException(message: String, val temporary: Boolean): RuntimeException("$message (temporary=$temporary)")
 class IpBannedException(ip: InetAddress, temporary: Boolean): SuspendedException("IP banned: $ip", temporary)
-class UserSuspendedException(username: Username, temporary: Boolean): SuspendedException("User suspended: $username", temporary)
-
-class UnknownUserException(username: Username): RuntimeException("Unknown username: $username")
+class UserSuspendedException(username: UserId, temporary: Boolean): SuspendedException("User suspended: $username", temporary)
+class UnknownUserException(userId: Any): RuntimeException("Unknown user: $userId")

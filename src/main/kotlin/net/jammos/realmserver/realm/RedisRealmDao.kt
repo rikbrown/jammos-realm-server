@@ -1,21 +1,19 @@
 package net.jammos.realmserver.realm
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.lambdaworks.redis.RedisClient
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
-import net.jammos.utils.auth.Username
+import net.jammos.utils.auth.UserId
+import net.jammos.utils.json.objectMapper
 import net.jammos.utils.types.InternetAddress
 
 private const val REALMS_KEY = "realms"
-private val objectMapper: ObjectMapper = ObjectMapper().registerKotlinModule()
 private fun json(obj: Any): String = objectMapper.writeValueAsString(obj)
 private inline fun <reified T: Any> fromJson(json: String): T = objectMapper.readValue(json)
 
 private fun realmPlayerCountKey(realmId: RealmId) = "realm:$realmId:playerCount"
-private fun realmUserCharacterCountKey(realmId: RealmId, username: Username) = "realm:$realmId:user:$username:characterCount"
+private fun realmUserCharacterCountKey(realmId: RealmId, userId: UserId) = "realm:$realmId:user:$userId:characterCount"
 
 private data class RedisRealm(
         val name: String,
@@ -58,12 +56,12 @@ class RedisRealmDao(redisClient: RedisClient): RealmDao {
         conn.hset(REALMS_KEY, realm.id.toString(), json(realm.toRedis()))
     }
 
-    override fun getUserCharacterCount(realmId: RealmId, username: Username): Int {
-        return conn.get(realmUserCharacterCountKey(realmId, username))?.toInt() ?: 0
+    override fun getUserCharacterCount(realmId: RealmId, userId: UserId): Int {
+        return conn.get(realmUserCharacterCountKey(realmId, userId))?.toInt() ?: 0
     }
 
-    override fun setUserCharacterCount(realmId: RealmId, username: Username, count: Int) {
-        conn.set(realmUserCharacterCountKey(realmId, username), count.toString())
+    override fun setUserCharacterCount(realmId: RealmId, userId: UserId, count: Int) {
+        conn.set(realmUserCharacterCountKey(realmId, userId), count.toString())
     }
 
     private suspend fun getPlayerCount(realmId: RealmId) = conn.get(realmPlayerCountKey(realmId))?.toInt() ?: 0

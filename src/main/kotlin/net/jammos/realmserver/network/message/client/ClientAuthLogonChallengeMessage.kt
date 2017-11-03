@@ -17,11 +17,12 @@ data class ClientAuthLogonChallengeMessage(
         val country: CharSequence,
         val timezoneBias: Long,
         val ip: InetAddress,
-        val srpIdentity: CharSequence
+        val srpIdentity: CharSequence,
+        val isReconnect: Boolean
 
 ): ClientAuthMessage {
 
-    companion object : ClientAuthMessage.Reader {
+    class Reader(private val isReconnect: Boolean): ClientAuthMessage.Reader {
         override fun readBody(input: ByteBuf): ClientAuthLogonChallengeMessage {
             field("error") { input.readByte() }
             field("packetSize") { input.readUnsignedShort() }
@@ -29,6 +30,8 @@ data class ClientAuthLogonChallengeMessage(
             return with(input) {
                 // @formatter:off
                 ClientAuthLogonChallengeMessage(
+                        isReconnect = isReconnect,
+
                         gameName     = field("gameName")     { readCharSequence(4) },
                         version1     = field("version1")     { readUnsignedByte() },
                         version2     = field("version2")     { readUnsignedByte() },

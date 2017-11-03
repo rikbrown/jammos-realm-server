@@ -11,7 +11,9 @@ import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
 import io.netty.handler.timeout.ReadTimeoutHandler
 import net.jammos.realmserver.auth.AuthManager
-import net.jammos.realmserver.network.AuthServerHandler
+import net.jammos.realmserver.network.handler.LogonChallengeHandler
+import net.jammos.realmserver.network.handler.LogonProofHandler
+import net.jammos.realmserver.network.handler.RealmListHandler
 import net.jammos.realmserver.network.message.coding.ClientAuthMessageDecoder
 import net.jammos.realmserver.network.message.coding.ServerAuthMessageEncoder
 import net.jammos.realmserver.realm.*
@@ -78,7 +80,10 @@ class AuthServer {
                                         ClientAuthMessageDecoder(),
                                         ServerAuthMessageEncoder(),
                                         ReadTimeoutHandler(TIMEOUT),
-                                        AuthServerHandler(authManager, realmDao))
+
+                                        LogonChallengeHandler(authManager),
+                                        LogonProofHandler(authManager),
+                                        RealmListHandler(authManager, realmDao))
                             }
                         })
 
