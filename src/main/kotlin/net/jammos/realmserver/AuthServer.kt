@@ -15,12 +15,10 @@ import net.jammos.realmserver.network.AuthServerHandler
 import net.jammos.realmserver.network.message.coding.ClientAuthMessageDecoder
 import net.jammos.realmserver.network.message.coding.ServerAuthMessageEncoder
 import net.jammos.realmserver.realm.*
-import net.jammos.utils.auth.Username.Username.username
 import net.jammos.utils.auth.crypto.CryptoManager
 import net.jammos.utils.auth.dao.RedisAuthDao
 import net.jammos.utils.types.InternetAddress
 import java.net.InetAddress
-import java.time.Instant.now
 
 class AuthServer {
     companion object {
@@ -34,19 +32,6 @@ class AuthServer {
         private val authManager = AuthManager(cryptoManager, authDao)
 
         init {
-            val rikUser = authDao.createUser(username("rik"), "1234")
-            val bannedUser = authDao.createUser(username("banned"), "banned")
-            val suspendedUser = authDao.createUser(username("suspended"), "suspended")
-
-            authDao.suspendUser(
-                    userId = bannedUser.userId,
-                    start = now(),
-                    end = null)
-            authDao.suspendUser(
-                    userId = suspendedUser.userId,
-                    start = now(),
-                    end = now())
-
             realmDao.updateRealm(Realm(
                     id = RealmId("test1"),
                     name = "Rank 11 Druids Only",
