@@ -8,7 +8,7 @@ import net.jammos.utils.types.WriteableByte
 /**
  * Network authentication commands
  */
-enum class AuthCommand(override val value: Int): WriteableByte {
+enum class AuthCommand(override val value: Short): WriteableByte {
     /**
      * Initial challenge.  The client presents an identity, the server presents some secrets.
      */
@@ -31,15 +31,15 @@ enum class AuthCommand(override val value: Int): WriteableByte {
          * Read an unsigned byte from the input and convert it to a [AuthCommand]
          */
         fun read(input: ByteBuf): AuthCommand {
-            val int = input.readUnsignedByte().toInt()
+            val int = input.readUnsignedByte()
             return ofValueOrNull(int) ?: throw IllegalCommandException(int)
         }
     }
 
-    class IllegalCommandException(cmd: Int): IllegalArgumentException("Illegal command: $cmd (${cmd.toHexString(3)})")
+    class IllegalCommandException(cmd: Short): IllegalArgumentException("Illegal command: $cmd (${cmd.toHexString(3)})")
 }
 
-enum class AuthResult(override val value: Int): WriteableByte {
+enum class AuthResult(override val value: Short): WriteableByte {
     SUCCESS(0x00),
     BANNED(0x03),
     SUSPENDED(0x0C),
