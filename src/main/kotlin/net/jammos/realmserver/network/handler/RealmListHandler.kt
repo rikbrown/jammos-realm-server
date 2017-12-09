@@ -6,7 +6,7 @@ import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.network.JammosRealmAttributes.USERID_ATTRIBUTE
 import net.jammos.realmserver.network.message.client.ClientRealmListMessage
 import net.jammos.realmserver.network.message.server.ServerRealmListResponse
-import net.jammos.realmserver.realm.RealmDao
+import net.jammos.utils.realm.RealmDao
 import net.jammos.utils.network.handler.JammosHandler
 
 class RealmListHandler(

@@ -3,8 +3,8 @@ package net.jammos.realmserver.network.message.server
 import io.netty.buffer.ByteBuf
 import mu.KLogging
 import net.jammos.realmserver.network.AuthCommand
-import net.jammos.realmserver.realm.Realm
-import net.jammos.realmserver.realm.RealmFlag
+import net.jammos.utils.realm.Realm
+import net.jammos.utils.realm.RealmFlag
 import net.jammos.utils.extensions.writeByte
 import java.io.ByteArrayOutputStream
 import java.io.DataOutput

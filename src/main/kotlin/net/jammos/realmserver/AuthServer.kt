@@ -14,9 +14,9 @@ import net.jammos.realmserver.auth.AuthManager
 import net.jammos.realmserver.network.handler.*
 import net.jammos.realmserver.network.message.coding.ClientAuthMessageDecoder
 import net.jammos.realmserver.network.message.coding.ServerAuthMessageEncoder
-import net.jammos.realmserver.realm.*
 import net.jammos.utils.auth.crypto.CryptoManager
 import net.jammos.utils.auth.dao.RedisAuthDao
+import net.jammos.utils.realm.*
 import net.jammos.utils.types.InternetAddress
 import java.net.InetAddress
 
@@ -24,7 +24,7 @@ object AuthServer {
     private val TIMEOUT = 10
     private val PORT = 3724
 
-    private val redis = RedisClient.create("redis://localhost")
+    private val redis = RedisClient.create("redis://localhost:15070")
     private val cryptoManager = CryptoManager()
     private val authDao = RedisAuthDao(redis, cryptoManager)
     private val realmDao = RedisRealmDao(redis)
