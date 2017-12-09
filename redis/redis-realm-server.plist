@@ -8,7 +8,7 @@
       <false/>
     </dict>
     <key>Label</key>
-    <string>homebrew.mxcl.redis</string>
+    <string>rik.jammos.redis-realm-server</string>
     <key>ProgramArguments</key>
     <array>
       <string>/usr/local/opt/redis/bin/redis-server</string>

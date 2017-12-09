@@ -7,7 +7,7 @@ Implementation of the World of Warcraft Auth Server in Kotlin.
 
 ## Redis
 
-Server requires uses Redis on port `15070`.
+Server requires Redis on port `15070`.
 
 ### MacOS
 
