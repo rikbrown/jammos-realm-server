@@ -1,7 +1,7 @@
 # jammos-auth-server
 JVM-based Awesome MMO Server [Auth Server]
 
-Implementation of the World of Warcraft Auth Server in Kotlin.
+Implementation of the Auth Server of a popular MMORPG (which was much better in 2006) in Kotlin.
 
 # Running
 
