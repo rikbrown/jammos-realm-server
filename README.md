@@ -1,7 +1,11 @@
 # jammos-auth-server
-JVM-based Awesome MMO Server [Auth Server]
+JVM-based Awesome MMO Server [Auth/Realm Server]
 
-Implementation of the Auth Server of a popular MMORPG (which was much better in 2006) in Kotlin.
+Implementation of the Auth Server of a popular MMORPG (which was much better in 2006) in Kotlin
+
+see also
+* https://github.com/rikbrown/jammos-shared-utils
+* https://github.com/rikbrown/jammos-game-server
 
 # Running
 
